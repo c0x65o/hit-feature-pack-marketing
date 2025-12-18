@@ -1,0 +1,2 @@
+-- Initial schema for marketing feature pack
+-- Add your CREATE TABLE statements here
