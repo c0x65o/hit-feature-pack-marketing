@@ -1,2 +1,4 @@
--- Initial schema for marketing feature pack
--- Add your CREATE TABLE statements here
+-- Feature Pack: marketing
+-- Initial migration
+-- Tables are managed by Drizzle. This file is reserved for extensions or seeds.
+-- Currently empty - marketing seeds (platforms, metrics, etc.) are app-specific.
