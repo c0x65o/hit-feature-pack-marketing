@@ -2,4 +2,4 @@
 // A HIT feature pack
 
 export * from './pages';
-export * from './schema/marketing';
+// Schema exports MOVED to @hit/feature-pack-marketing/schema to avoid bundling drizzle-orm in client
