@@ -36,3 +36,20 @@ export function extractUserFromRequest(request: NextRequest): User | null {
     return null;
   }
 }
+
+export function isAdmin(user: User | null): boolean {
+  if (!user) return false;
+  return user.roles?.includes('admin') ?? false;
+}
+
+export interface MarketingOptions {
+  enable_project_linking?: boolean;
+}
+
+export function getMarketingOptionsFromRequest(_request: NextRequest): MarketingOptions {
+  // This would typically read from pack config or request headers
+  // For now, return default options
+  return {
+    enable_project_linking: false
+  };
+}

@@ -7,5 +7,12 @@
  */
 
 // Re-export schema tables from this feature pack
-// Update this when you add tables to src/schema/marketing.ts
-// export { myTable } from '../schema/marketing';
+export {
+  marketingPlanTypes,
+  marketingActivityTypes,
+  marketingPlans,
+  marketingVendors,
+  marketingExpenses,
+  marketingPlanTypeBudgets,
+  marketingEntityLinks
+} from '../schema/marketing';

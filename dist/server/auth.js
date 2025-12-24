@@ -28,3 +28,15 @@ export function extractUserFromRequest(request) {
         return null;
     }
 }
+export function isAdmin(user) {
+    if (!user)
+        return false;
+    return user.roles?.includes('admin') ?? false;
+}
+export function getMarketingOptionsFromRequest(_request) {
+    // This would typically read from pack config or request headers
+    // For now, return default options
+    return {
+        enable_project_linking: false
+    };
+}
