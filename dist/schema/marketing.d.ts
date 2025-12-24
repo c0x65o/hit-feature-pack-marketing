@@ -5,7 +5,7 @@
  * This schema gets merged into the project's database.
  *
  * Core entities:
- * - marketingPlans: Budget plans linked to projects
+ * - marketingPlans: Budget plans (standalone; optionally link to projects via marketingEntityLinks)
  * - marketingExpenses: Actual spend entries
  * - marketingVendors: Vendor/platform directory
  * - marketingPlanTypes: Plan categorization
@@ -25,12 +25,12 @@ export declare const marketingPlanTypes: import("drizzle-orm/pg-core").PgTableWi
             name: "id";
             tableName: "marketing_plan_types";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            hasDefault: true;
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         key: import("drizzle-orm/pg-core").PgColumn<{
@@ -168,12 +168,12 @@ export declare const marketingActivityTypes: import("drizzle-orm/pg-core").PgTab
             name: "id";
             tableName: "marketing_activity_types";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            hasDefault: true;
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         key: import("drizzle-orm/pg-core").PgColumn<{
@@ -313,10 +313,8 @@ export declare const marketingActivityTypes: import("drizzle-orm/pg-core").PgTab
 }>;
 /**
  * Marketing Plans Table
- * Stores marketing plans for projects with title, budget amount, and optional dates
- *
- * Note: projectId references projects.id from the projects feature pack (UUID)
- * The FK constraint is created via migration since we can't reference cross-pack schemas directly
+ * Stores marketing plans with title, budget amount, and optional dates.
+ * Standalone: no projectId required; optional linking is done via marketingEntityLinks.
  */
 export declare const marketingPlans: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "marketing_plans";
@@ -326,36 +324,24 @@ export declare const marketingPlans: import("drizzle-orm/pg-core").PgTableWithCo
             name: "id";
             tableName: "marketing_plans";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
-            baseColumn: never;
-        }, {}, {}>;
-        projectId: import("drizzle-orm/pg-core").PgColumn<{
-            name: "project_id";
-            tableName: "marketing_plans";
-            dataType: "string";
-            columnType: "PgVarchar";
-            data: string;
-            driverParam: string;
-            notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            hasDefault: true;
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         typeId: import("drizzle-orm/pg-core").PgColumn<{
             name: "type_id";
             tableName: "marketing_plans";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: false;
             hasDefault: false;
-            enumValues: [string, ...string[]];
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         title: import("drizzle-orm/pg-core").PgColumn<{
@@ -481,12 +467,12 @@ export declare const marketingVendors: import("drizzle-orm/pg-core").PgTableWith
             name: "id";
             tableName: "marketing_vendors";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            hasDefault: true;
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         name: import("drizzle-orm/pg-core").PgColumn<{
@@ -600,60 +586,48 @@ export declare const marketingExpenses: import("drizzle-orm/pg-core").PgTableWit
             name: "id";
             tableName: "marketing_expenses";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
-            baseColumn: never;
-        }, {}, {}>;
-        projectId: import("drizzle-orm/pg-core").PgColumn<{
-            name: "project_id";
-            tableName: "marketing_expenses";
-            dataType: "string";
-            columnType: "PgVarchar";
-            data: string;
-            driverParam: string;
-            notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            hasDefault: true;
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         planId: import("drizzle-orm/pg-core").PgColumn<{
             name: "plan_id";
             tableName: "marketing_expenses";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: false;
             hasDefault: false;
-            enumValues: [string, ...string[]];
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         typeId: import("drizzle-orm/pg-core").PgColumn<{
             name: "type_id";
             tableName: "marketing_expenses";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: false;
             hasDefault: false;
-            enumValues: [string, ...string[]];
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         vendorId: import("drizzle-orm/pg-core").PgColumn<{
             name: "vendor_id";
             tableName: "marketing_expenses";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: false;
             hasDefault: false;
-            enumValues: [string, ...string[]];
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         occurredAt: import("drizzle-orm/pg-core").PgColumn<{
@@ -755,48 +729,36 @@ export declare const marketingPlanTypeBudgets: import("drizzle-orm/pg-core").PgT
             name: "id";
             tableName: "marketing_plan_type_budgets";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            hasDefault: true;
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         planId: import("drizzle-orm/pg-core").PgColumn<{
             name: "plan_id";
             tableName: "marketing_plan_type_budgets";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
             hasDefault: false;
-            enumValues: [string, ...string[]];
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         activityTypeId: import("drizzle-orm/pg-core").PgColumn<{
             name: "activity_type_id";
             tableName: "marketing_plan_type_budgets";
             dataType: "string";
-            columnType: "PgVarchar";
+            columnType: "PgUUID";
             data: string;
             driverParam: string;
             notNull: true;
             hasDefault: false;
-            enumValues: [string, ...string[]];
-            baseColumn: never;
-        }, {}, {}>;
-        typeId: import("drizzle-orm/pg-core").PgColumn<{
-            name: "type_id";
-            tableName: "marketing_plan_type_budgets";
-            dataType: "string";
-            columnType: "PgVarchar";
-            data: string;
-            driverParam: string;
-            notNull: true;
-            hasDefault: false;
-            enumValues: [string, ...string[]];
+            enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
         plannedAmount: import("drizzle-orm/pg-core").PgColumn<{
@@ -898,6 +860,18 @@ export declare const marketingEntityLinks: import("drizzle-orm/pg-core").PgTable
             data: string;
             driverParam: string;
             notNull: true;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        metadata: import("drizzle-orm/pg-core").PgColumn<{
+            name: "metadata";
+            tableName: "marketing_entity_links";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: unknown;
+            driverParam: unknown;
+            notNull: false;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;

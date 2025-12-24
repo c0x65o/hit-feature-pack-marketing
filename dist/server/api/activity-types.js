@@ -48,13 +48,11 @@ export async function POST(request) {
         if (existing)
             return NextResponse.json({ error: 'An activity type with this key already exists' }, { status: 409 });
         const now = new Date();
-        const id = `atype_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
         const allTypes = await db.select().from(marketingActivityTypes);
         const maxSort = allTypes.length;
         const [created] = await db
             .insert(marketingActivityTypes)
             .values({
-            id,
             key: String(key).trim(),
             name: String(name).trim(),
             category: category || null,

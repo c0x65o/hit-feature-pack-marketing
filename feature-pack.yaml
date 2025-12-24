@@ -1,8 +1,8 @@
 # Feature Pack: marketing
-# A HIT feature pack
+# Standalone marketing with plans, expenses, vendors, and dashboards (optional project linking via feature flag)
 
 name: marketing
-description: A HIT feature pack
+description: Standalone marketing with plans, expenses, vendors, and dashboards (optional project linking via feature flag)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ROUTES - Frontend page routes
@@ -11,38 +11,186 @@ routes:
   - path: /marketing
     page: Dashboard
     roles: []
+  - path: /marketing/plans
+    page: PlansList
+    roles: []
+  - path: /marketing/plans/[id]
+    page: PlanDetail
+    roles: []
+  - path: /marketing/expenses
+    page: ExpensesList
+    roles: []
+  - path: /marketing/vendors
+    page: VendorsList
+    roles: []
+  - path: /marketing/setup/plan-types
+    page: PlanTypesSetup
+    roles: [admin]
+  - path: /marketing/setup/activity-types
+    page: ActivityTypesSetup
+    roles: [admin]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # NAVIGATION - Sidebar/topbar items
 # ─────────────────────────────────────────────────────────────────────────────
 nav:
   - id: marketing
-    label: marketing
+    label: Marketing
     path: /marketing
     icon: Package
     group: main
     weight: 100
     showWhen: authenticated
+    children:
+      - id: marketing-dashboard
+        label: Dashboard
+        path: /marketing
+        icon: LayoutDashboard
+        weight: 100
+        showWhen: authenticated
+      - id: marketing-plans
+        label: Plans
+        path: /marketing/plans
+        icon: ClipboardList
+        weight: 200
+        showWhen: authenticated
+      - id: marketing-expenses
+        label: Expenses
+        path: /marketing/expenses
+        icon: Receipt
+        weight: 300
+        showWhen: authenticated
+      - id: marketing-vendors
+        label: Vendors
+        path: /marketing/vendors
+        icon: Store
+        weight: 400
+        showWhen: authenticated
+      - id: marketing-setup
+        label: Setup
+        path: ""
+        icon: Settings
+        weight: 900
+        showWhen: authenticated
+        roles: [admin]
+        children:
+          - id: marketing-setup-plan-types
+            label: Plan Types
+            path: /marketing/setup/plan-types
+            icon: Tag
+            weight: 100
+            showWhen: authenticated
+            roles: [admin]
+          - id: marketing-setup-activity-types
+            label: Activity Types
+            path: /marketing/setup/activity-types
+            icon: List
+            weight: 200
+            showWhen: authenticated
+            roles: [admin]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SCHEMA - Drizzle ORM table definitions
 # ─────────────────────────────────────────────────────────────────────────────
 schema:
   source: src/schema/marketing.ts
-  exports: []
+  exports:
+    - marketingPlanTypes
+    - marketingActivityTypes
+    - marketingPlans
+    - marketingVendors
+    - marketingExpenses
+    - marketingPlanTypeBudgets
+    - marketingEntityLinks
+    - MarketingPlanType
+    - InsertMarketingPlanType
+    - MarketingActivityType
+    - InsertMarketingActivityType
+    - MarketingPlan
+    - InsertMarketingPlan
+    - MarketingVendor
+    - InsertMarketingVendor
+    - MarketingExpense
+    - InsertMarketingExpense
+    - MarketingPlanTypeBudget
+    - InsertMarketingPlanTypeBudget
+    - MarketingEntityLink
+    - InsertMarketingEntityLink
 
 # ─────────────────────────────────────────────────────────────────────────────
 # API ROUTES - Backend endpoints
 # ─────────────────────────────────────────────────────────────────────────────
 api:
-  routes: []
+  routes:
+    - path: /api/marketing/summary
+      methods: [GET]
+      handler: "@hit/feature-pack-marketing/server/api/summary"
+      description: "Marketing dashboard summary (month, YTD, breakdowns)"
+    - path: /api/marketing/plans
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/plans"
+      description: "List plans (GET) or create plan (POST)"
+    - path: /api/marketing/plans/[id]
+      methods: [GET, PUT, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/plans-id"
+      description: "Get, update, or delete a specific plan"
+    - path: /api/marketing/plans/[id]/type-budgets
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/plans-type-budgets"
+      description: "List or upsert activity-type budgets for a plan"
+    - path: /api/marketing/expenses
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/expenses"
+      description: "List expenses (GET) or create expense (POST)"
+    - path: /api/marketing/expenses/[id]
+      methods: [GET, PUT, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/expenses-id"
+      description: "Get, update, or delete a specific expense"
+    - path: /api/marketing/vendors
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/vendors"
+      description: "List vendors (GET) or create vendor (POST)"
+    - path: /api/marketing/vendors/[id]
+      methods: [GET, PUT, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/vendors-id"
+      description: "Get, update, or delete a specific vendor"
+    - path: /api/marketing/plan-types
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/plan-types"
+      description: "List plan types (GET) or create plan type (POST) [admin]"
+    - path: /api/marketing/plan-types/[id]
+      methods: [GET, PUT, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/plan-types-id"
+      description: "Get, update, or delete a plan type [admin]"
+    - path: /api/marketing/activity-types
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/activity-types"
+      description: "List activity types (GET) or create activity type (POST) [admin]"
+    - path: /api/marketing/activity-types/[id]
+      methods: [GET, PUT, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/activity-types-id"
+      description: "Get, update, or delete an activity type [admin]"
+    - path: /api/marketing/links
+      methods: [GET, POST, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/links"
+      description: "Optional entity linking (gated behind enable_project_linking)"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DEPENDENCIES
 # ─────────────────────────────────────────────────────────────────────────────
 requires:
-  modules: []
+  modules: [auth]
 
 dependencies:
   feature_packs:
     - name: dashboard-shell
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONFIGURATION OPTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+config:
+  schema:
+    enable_project_linking:
+      type: boolean
+      default: false
+      description: "Enable optional project linking UI + APIs. Marketing remains standalone; links are never required."

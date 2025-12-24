@@ -49,14 +49,12 @@ export async function POST(request: NextRequest) {
     if (existing) return NextResponse.json({ error: 'A plan type with this key already exists' }, { status: 409 });
 
     const now = new Date();
-    const id = `ptype_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const allTypes = await db.select().from(marketingPlanTypes);
     const maxSort = allTypes.length;
 
     const [created] = await db
       .insert(marketingPlanTypes)
       .values({
-        id,
         key: String(key).trim(),
         name: String(name).trim(),
         description: description || null,
