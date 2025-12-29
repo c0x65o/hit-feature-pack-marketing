@@ -1,6 +1,6 @@
 {
   "name": "@hit/feature-pack-marketing",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A HIT feature pack",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -44,6 +44,7 @@
     "@hit/sdk": "*",
     "@hit/ui-kit": "*",
     "drizzle-orm": ">=0.30.0",
+    "zod": ">=3.22.0",
     "lucide-react": ">=0.263.0",
     "next": "^14.0.0",
     "react": "^18.0.0"
@@ -54,6 +55,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "drizzle-orm": "^0.30.0",
+    "zod": "^3.22.0",
     "lucide-react": "^0.460.0",
     "next": "^14.2.5",
     "typescript": "^5.9.3"
