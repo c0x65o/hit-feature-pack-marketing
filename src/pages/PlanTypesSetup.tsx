@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useUi } from '@hit/ui-kit';
+import { useUi, ColorPicker } from '@hit/ui-kit';
 import { Plus, Tag } from 'lucide-react';
 
 type PlanType = {
@@ -62,7 +62,7 @@ export function PlanTypesSetup() {
       },
       { key: 'key', label: 'Key', render: (_v: unknown, row: PlanType) => <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{row.key}</code> },
       { key: 'isActive', label: 'Status', render: (_v: unknown, row: PlanType) => <Badge variant={row.isActive ? 'success' : 'default'}>{row.isActive ? 'Active' : 'Inactive'}</Badge> },
-      { key: 'isSystem', label: 'Type', render: (_v: unknown, row: PlanType) => <Badge variant={row.isSystem ? 'default' : 'secondary'}>{row.isSystem ? 'System' : 'Custom'}</Badge> },
+      { key: 'isSystem', label: 'Type', render: (_v: unknown, row: PlanType) => <Badge variant={row.isSystem ? 'default' : 'info'}>{row.isSystem ? 'System' : 'Custom'}</Badge> },
     ],
     [Badge]
   );
@@ -146,10 +146,12 @@ export function PlanTypesSetup() {
             <label className="text-sm font-medium">Name *</label>
             <Input value={name} onChange={setName} placeholder="Influencer Partnership" />
           </div>
-          <div>
-            <label className="text-sm font-medium">Color</label>
-            <Input value={color} onChange={setColor} placeholder="#3b82f6" />
-          </div>
+          <ColorPicker
+            label="Color"
+            value={color}
+            onChange={setColor}
+            placeholder="#3b82f6"
+          />
           <div>
             <label className="text-sm font-medium">Icon</label>
             <Input value={icon} onChange={setIcon} placeholder="Lucide icon name (optional)" />
