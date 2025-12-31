@@ -7,21 +7,5 @@ export declare const putBodySchema: z.ZodObject<{
     endDate: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     allocateByType: z.ZodOptional<z.ZodBoolean>;
     isArchived: z.ZodOptional<z.ZodBoolean>;
-}, "strip", z.ZodTypeAny, {
-    typeId?: string | null | undefined;
-    title?: string | undefined;
-    budgetAmount?: number | undefined;
-    startDate?: string | null | undefined;
-    endDate?: string | null | undefined;
-    allocateByType?: boolean | undefined;
-    isArchived?: boolean | undefined;
-}, {
-    typeId?: string | null | undefined;
-    title?: string | undefined;
-    budgetAmount?: number | undefined;
-    startDate?: string | null | undefined;
-    endDate?: string | null | undefined;
-    allocateByType?: boolean | undefined;
-    isArchived?: boolean | undefined;
-}>;
+}, z.core.$strip>;
 //# sourceMappingURL=plans-id.schema.d.ts.map

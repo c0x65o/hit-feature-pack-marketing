@@ -8,23 +8,5 @@ export declare const putBodySchema: z.ZodObject<{
     icon: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     sortOrder: z.ZodOptional<z.ZodString>;
     isActive: z.ZodOptional<z.ZodBoolean>;
-}, "strip", z.ZodTypeAny, {
-    name?: string | undefined;
-    key?: string | undefined;
-    description?: string | null | undefined;
-    color?: string | null | undefined;
-    icon?: string | null | undefined;
-    sortOrder?: string | undefined;
-    isActive?: boolean | undefined;
-    category?: string | null | undefined;
-}, {
-    name?: string | undefined;
-    key?: string | undefined;
-    description?: string | null | undefined;
-    color?: string | null | undefined;
-    icon?: string | null | undefined;
-    sortOrder?: string | undefined;
-    isActive?: boolean | undefined;
-    category?: string | null | undefined;
-}>;
+}, z.core.$strip>;
 //# sourceMappingURL=activity-types-id.schema.d.ts.map

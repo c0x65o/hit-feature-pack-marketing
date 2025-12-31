@@ -7,21 +7,5 @@ export declare const putBodySchema: z.ZodObject<{
     amount: z.ZodOptional<z.ZodNumber>;
     notes: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     attachmentUrl: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-}, "strip", z.ZodTypeAny, {
-    typeId?: string | null | undefined;
-    notes?: string | null | undefined;
-    planId?: string | null | undefined;
-    vendorId?: string | null | undefined;
-    occurredAt?: string | undefined;
-    amount?: number | undefined;
-    attachmentUrl?: string | null | undefined;
-}, {
-    typeId?: string | null | undefined;
-    notes?: string | null | undefined;
-    planId?: string | null | undefined;
-    vendorId?: string | null | undefined;
-    occurredAt?: string | undefined;
-    amount?: number | undefined;
-    attachmentUrl?: string | null | undefined;
-}>;
+}, z.core.$strip>;
 //# sourceMappingURL=expenses-id.schema.d.ts.map

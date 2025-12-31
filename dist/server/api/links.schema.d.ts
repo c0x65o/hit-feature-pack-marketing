@@ -4,15 +4,5 @@ export declare const postBodySchema: z.ZodObject<{
     marketingEntityId: z.ZodString;
     linkedEntityKind: z.ZodString;
     linkedEntityId: z.ZodString;
-}, "strip", z.ZodTypeAny, {
-    marketingEntityType: string;
-    marketingEntityId: string;
-    linkedEntityKind: string;
-    linkedEntityId: string;
-}, {
-    marketingEntityType: string;
-    marketingEntityId: string;
-    linkedEntityKind: string;
-    linkedEntityId: string;
-}>;
+}, z.core.$strip>;
 //# sourceMappingURL=links.schema.d.ts.map

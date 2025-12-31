@@ -7,21 +7,5 @@ export declare const postBodySchema: z.ZodObject<{
     amount: z.ZodNumber;
     notes: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     attachmentUrl: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-}, "strip", z.ZodTypeAny, {
-    occurredAt: string;
-    amount: number;
-    typeId?: string | null | undefined;
-    notes?: string | null | undefined;
-    planId?: string | null | undefined;
-    vendorId?: string | null | undefined;
-    attachmentUrl?: string | null | undefined;
-}, {
-    occurredAt: string;
-    amount: number;
-    typeId?: string | null | undefined;
-    notes?: string | null | undefined;
-    planId?: string | null | undefined;
-    vendorId?: string | null | undefined;
-    attachmentUrl?: string | null | undefined;
-}>;
+}, z.core.$strip>;
 //# sourceMappingURL=expenses.schema.d.ts.map

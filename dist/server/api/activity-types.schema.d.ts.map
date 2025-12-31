@@ -1,1 +1,1 @@
-{"version":3,"file":"activity-types.schema.d.ts","sourceRoot":"","sources":["../../../src/server/api/activity-types.schema.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAC;AAMxB,eAAO,MAAM,cAAc;;;;;;;;;;;;;;;;;;;;;EAOzB,CAAC;AAEH,eAAO,MAAM,aAAa;;;;;;;;;;;;;;;;;;;;;;;;;;;EASxB,CAAC"}
+{"version":3,"file":"activity-types.schema.d.ts","sourceRoot":"","sources":["../../../src/server/api/activity-types.schema.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAC;AAMxB,eAAO,MAAM,cAAc;;;;;;;iBAOzB,CAAC;AAEH,eAAO,MAAM,aAAa;;;;;;;;;iBASxB,CAAC"}

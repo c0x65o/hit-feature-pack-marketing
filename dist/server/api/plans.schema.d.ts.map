@@ -1,1 +1,1 @@
-{"version":3,"file":"plans.schema.d.ts","sourceRoot":"","sources":["../../../src/server/api/plans.schema.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAC;AAOxB,eAAO,MAAM,cAAc;;;;;;;;;;;;;;;;;;;;;EAOzB,CAAC"}
+{"version":3,"file":"plans.schema.d.ts","sourceRoot":"","sources":["../../../src/server/api/plans.schema.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,CAAC,EAAE,MAAM,KAAK,CAAC;AAOxB,eAAO,MAAM,cAAc;;;;;;;iBAOzB,CAAC"}

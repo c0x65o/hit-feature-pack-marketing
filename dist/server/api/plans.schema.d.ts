@@ -6,19 +6,5 @@ export declare const postBodySchema: z.ZodObject<{
     startDate: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     endDate: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     allocateByType: z.ZodOptional<z.ZodBoolean>;
-}, "strip", z.ZodTypeAny, {
-    title: string;
-    budgetAmount: number;
-    typeId?: string | null | undefined;
-    startDate?: string | null | undefined;
-    endDate?: string | null | undefined;
-    allocateByType?: boolean | undefined;
-}, {
-    title: string;
-    budgetAmount: number;
-    typeId?: string | null | undefined;
-    startDate?: string | null | undefined;
-    endDate?: string | null | undefined;
-    allocateByType?: boolean | undefined;
-}>;
+}, z.core.$strip>;
 //# sourceMappingURL=plans.schema.d.ts.map
