@@ -1,1 +1,0 @@
-{"version":3,"file":"vendors.d.ts","sourceRoot":"","sources":["../../../src/server/api/vendors.ts"],"names":[],"mappings":"AAAA;;;;;GAKG;AACH,OAAO,EAAE,WAAW,EAAE,YAAY,EAAE,MAAM,aAAa,CAAC;AAKxD,eAAO,MAAM,OAAO,kBAAkB,CAAC;AACvC,eAAO,MAAM,OAAO,WAAW,CAAC;AAEhC,wBAAsB,GAAG,CAAC,OAAO,EAAE,WAAW;;;;IAwB7C;AAED,wBAAsB,IAAI,CAAC,OAAO,EAAE,WAAW,8BAkC9C"}
