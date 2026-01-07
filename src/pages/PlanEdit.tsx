@@ -4,8 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUi, useFormSubmit, type BreadcrumbItem } from '@hit/ui-kit';
 import { Package, ClipboardList } from 'lucide-react';
+import { useMarketingConfig } from '../hooks/useMarketingConfig';
 
 type PlanType = { id: string; name: string; color: string | null };
+
+type Project = { id: string; name: string };
+
 type PlanData = {
   id: string;
   title: string;
@@ -14,6 +18,7 @@ type PlanData = {
   startDate: string | null;
   endDate: string | null;
   isArchived: boolean;
+  projectId?: string | null;
 };
 
 interface PlanEditProps {
@@ -26,48 +31,66 @@ export function PlanEdit({ id, onNavigate }: PlanEditProps) {
   const router = useRouter();
   const { Page, Card, Input, Button, Select, Spinner, Alert } = useUi();
   const { submitting, error, fieldErrors, submit, clearError, setFieldErrors, clearFieldError } = useFormSubmit();
+  const { config: marketingConfig } = useMarketingConfig();
+
+  const linkingEnabled = Boolean(marketingConfig.options.enable_project_linking) && Boolean(marketingConfig.projectsInstalled);
+  const linkingRequired = linkingEnabled && Boolean(marketingConfig.options.require_project_linking);
 
   const [loading, setLoading] = useState(!!planId);
   const [plan, setPlan] = useState<PlanData | null>(null);
   const [types, setTypes] = useState<PlanType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Form state
   const [title, setTitle] = useState('');
   const [budgetAmount, setBudgetAmount] = useState('0');
   const [typeId, setTypeId] = useState('');
+  const [projectId, setProjectId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const navigate = useCallback((path: string) => {
-    if (onNavigate) {
-      onNavigate(path);
-    } else {
-      router.push(path);
-    }
-  }, [onNavigate, router]);
+  const navigate = useCallback(
+    (path: string) => {
+      if (onNavigate) {
+        onNavigate(path);
+      } else {
+        router.push(path);
+      }
+    },
+    [onNavigate, router]
+  );
 
-  // Fetch plan and types
+  // Fetch plan, types, projects
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [typesRes, planRes] = await Promise.all([
-          fetch('/api/marketing/plan-types?activeOnly=true&limit=500'),
-          planId ? fetch(`/api/marketing/plans/${encodeURIComponent(planId)}`) : Promise.resolve(null),
-        ]);
-
+        const typesRes = await fetch('/api/marketing/plan-types?activeOnly=true&limit=500');
         if (typesRes.ok) {
           const typesData = await typesRes.json();
           setTypes(typesData.items || []);
         }
 
-        if (planRes && planRes.ok) {
-          const planData = await planRes.json();
-          setPlan(planData);
-          setTitle(planData.title || '');
-          setBudgetAmount(String(planData.budgetAmount || 0));
-          setTypeId(planData.typeId || planData.type?.id || '');
-          setStartDate(planData.startDate ? new Date(planData.startDate).toISOString().slice(0, 10) : '');
-          setEndDate(planData.endDate ? new Date(planData.endDate).toISOString().slice(0, 10) : '');
+        if (linkingEnabled) {
+          const projectsRes = await fetch('/api/projects?page=1&pageSize=500&excludeArchived=true');
+          if (projectsRes.ok) {
+            const j = await projectsRes.json();
+            const data = Array.isArray(j?.data) ? j.data : [];
+            setProjects(data.map((p: any) => ({ id: String(p.id), name: String(p.name || p.id) })));
+          }
+        }
+
+        if (planId) {
+          const planRes = await fetch(`/api/marketing/plans/${encodeURIComponent(planId)}`);
+          if (planRes.ok) {
+            const planData = await planRes.json();
+            setPlan(planData);
+            setTitle(planData.title || '');
+            setBudgetAmount(String(planData.budgetAmount ?? 0));
+            setTypeId(planData.typeId || planData.type?.id || '');
+            setProjectId(planData.projectId || '');
+            setStartDate(planData.startDate ? new Date(planData.startDate).toISOString().slice(0, 10) : '');
+            setEndDate(planData.endDate ? new Date(planData.endDate).toISOString().slice(0, 10) : '');
+          }
         }
       } catch (e) {
         console.error('Failed to load data:', e);
@@ -76,12 +99,15 @@ export function PlanEdit({ id, onNavigate }: PlanEditProps) {
       }
     };
     fetchData();
-  }, [planId]);
+  }, [planId, linkingEnabled]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!title.trim()) {
       errors.title = 'Title is required';
+    }
+    if (linkingRequired && !projectId) {
+      errors.projectId = 'Project is required';
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -97,6 +123,8 @@ export function PlanEdit({ id, onNavigate }: PlanEditProps) {
       typeId: typeId || null,
       startDate: startDate || null,
       endDate: endDate || null,
+      // Optional project link (stored server-side via marketing_entity_links)
+      projectId: linkingEnabled ? (projectId || null) : undefined,
     };
 
     const result = await submit(async () => {
@@ -126,7 +154,7 @@ export function PlanEdit({ id, onNavigate }: PlanEditProps) {
     });
 
     if (result && typeof result === 'object' && 'id' in result) {
-      navigate(`/marketing/plans/${result.id}`);
+      navigate(`/marketing/plans/${(result as any).id}`);
     }
   };
 
@@ -148,11 +176,7 @@ export function PlanEdit({ id, onNavigate }: PlanEditProps) {
   ];
 
   return (
-    <Page
-      title={planId ? 'Edit Plan' : 'New Plan'}
-      breadcrumbs={breadcrumbs}
-      onNavigate={navigate}
-    >
+    <Page title={planId ? 'Edit Plan' : 'New Plan'} breadcrumbs={breadcrumbs} onNavigate={navigate}>
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           {error && (
@@ -164,43 +188,56 @@ export function PlanEdit({ id, onNavigate }: PlanEditProps) {
           <Input
             label="Title"
             value={title}
-            onChange={(v: string) => { setTitle(v); clearFieldError('title'); }}
+            onChange={(v: string) => {
+              setTitle(v);
+              clearFieldError('title');
+            }}
             required
             error={fieldErrors.title}
             placeholder="e.g. Q1 Launch Campaign"
           />
 
+          {linkingEnabled ? (
+            <Select
+              label={linkingRequired ? 'Project *' : 'Project (optional)'}
+              options={[
+                { value: '', label: '— None —' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+              value={projectId}
+              onChange={(v: string) => {
+                setProjectId(v);
+                clearFieldError('projectId');
+              }}
+              required={linkingRequired}
+              error={fieldErrors.projectId}
+            />
+          ) : null}
+
           <Input
             label="Budget (USD)"
             value={budgetAmount}
-            onChange={(v: string) => { setBudgetAmount(v); clearFieldError('budgetAmount'); }}
+            onChange={(v: string) => {
+              setBudgetAmount(v);
+              clearFieldError('budgetAmount');
+            }}
             error={fieldErrors.budgetAmount}
             placeholder="0"
           />
 
           <Select
             label="Plan Type"
-            options={[
-              { value: '', label: '— None —' },
-              ...types.map((t) => ({ value: t.id, label: t.name })),
-            ]}
+            options={[{ value: '', label: '— None —' }, ...types.map((t) => ({ value: t.id, label: t.name }))]}
             value={typeId}
-            onChange={(v: string) => { setTypeId(v); clearFieldError('typeId'); }}
+            onChange={(v: string) => {
+              setTypeId(v);
+              clearFieldError('typeId');
+            }}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Start Date"
-              type="date"
-              value={startDate}
-              onChange={setStartDate}
-            />
-            <Input
-              label="End Date"
-              type="date"
-              value={endDate}
-              onChange={setEndDate}
-            />
+            <Input label="Start Date" type="date" value={startDate} onChange={setStartDate} />
+            <Input label="End Date" type="date" value={endDate} onChange={setEndDate} />
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">

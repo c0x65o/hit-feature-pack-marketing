@@ -4,10 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUi, useFormSubmit, type BreadcrumbItem } from '@hit/ui-kit';
 import { Package, Receipt } from 'lucide-react';
+import { useMarketingConfig } from '../hooks/useMarketingConfig';
 
 type Plan = { id: string; title: string };
 type Vendor = { id: string; name: string; kind: string };
 type ActivityType = { id: string; name: string; color: string | null };
+type Project = { id: string; name: string };
 
 type ExpenseData = {
   id: string;
@@ -17,6 +19,7 @@ type ExpenseData = {
   planId: string | null;
   vendorId: string | null;
   typeId: string | null;
+  projectId?: string | null;
 };
 
 function formatUsd(n: number): string {
@@ -34,6 +37,10 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
   const searchParams = useSearchParams();
   const { Page, Card, Input, Button, Select, Spinner, TextArea, Alert } = useUi();
   const { submitting, error, fieldErrors, submit, clearError, setFieldErrors, clearFieldError } = useFormSubmit();
+  const { config: marketingConfig } = useMarketingConfig();
+
+  const linkingEnabled = Boolean(marketingConfig.options.enable_project_linking) && Boolean(marketingConfig.projectsInstalled);
+  const linkingRequired = linkingEnabled && Boolean(marketingConfig.options.require_project_linking);
 
   const [loading, setLoading] = useState(!!expenseId);
   const [expense, setExpense] = useState<ExpenseData | null>(null);
@@ -42,6 +49,7 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Form state
   const initialPlanId = searchParams?.get('planId') || '';
@@ -50,30 +58,33 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
   const [planId, setPlanId] = useState(initialPlanId);
   const [vendorId, setVendorId] = useState('');
   const [typeId, setTypeId] = useState('');
+  const [projectId, setProjectId] = useState('');
   const [notes, setNotes] = useState('');
 
-  const navigate = useCallback((path: string) => {
-    if (onNavigate) {
-      onNavigate(path);
-    } else {
-      router.push(path);
-    }
-  }, [onNavigate, router]);
+  const navigate = useCallback(
+    (path: string) => {
+      if (onNavigate) {
+        onNavigate(path);
+      } else {
+        router.push(path);
+      }
+    },
+    [onNavigate, router]
+  );
 
   // Fetch expense and lookups
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [plansRes, vendorsRes, typesRes, expenseRes] = await Promise.all([
-          fetch('/api/marketing/plans?limit=500'),
-          fetch('/api/marketing/vendors?activeOnly=true&limit=500'),
-          fetch('/api/marketing/activity-types?activeOnly=true&limit=500'),
-          expenseId ? fetch(`/api/marketing/expenses/${encodeURIComponent(expenseId)}`) : Promise.resolve(null),
+        const [plansRes, vendorsRes, typesRes] = await Promise.all([
+          fetch('/api/marketing/plans?limit=500&offset=0'),
+          fetch('/api/marketing/vendors?activeOnly=true&limit=500&offset=0'),
+          fetch('/api/marketing/activity-types?activeOnly=true&limit=500&offset=0'),
         ]);
 
         if (plansRes.ok) {
           const d = await plansRes.json();
-          setPlans((d.items || []).map((p: any) => ({ id: p.id, title: p.title })));
+          setPlans((d.items || []).map((p: any) => ({ id: String(p.id), title: String(p.title) })));
         }
         if (vendorsRes.ok) {
           const d = await vendorsRes.json();
@@ -84,15 +95,28 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
           setActivityTypes(d.items || []);
         }
 
-        if (expenseRes && expenseRes.ok) {
-          const data = await expenseRes.json();
-          setExpense(data);
-          setOccurredAt(data.occurredAt ? new Date(data.occurredAt).toISOString().slice(0, 16) : '');
-          setAmount(String(data.amount || 0));
-          setPlanId(data.planId || data.plan?.id || '');
-          setVendorId(data.vendorId || data.vendor?.id || '');
-          setTypeId(data.typeId || data.type?.id || '');
-          setNotes(data.notes || '');
+        if (linkingEnabled) {
+          const projectsRes = await fetch('/api/projects?page=1&pageSize=500&excludeArchived=true');
+          if (projectsRes.ok) {
+            const j = await projectsRes.json();
+            const data = Array.isArray(j?.data) ? j.data : [];
+            setProjects(data.map((p: any) => ({ id: String(p.id), name: String(p.name || p.id) })));
+          }
+        }
+
+        if (expenseId) {
+          const expenseRes = await fetch(`/api/marketing/expenses/${encodeURIComponent(expenseId)}`);
+          if (expenseRes.ok) {
+            const data = await expenseRes.json();
+            setExpense(data);
+            setOccurredAt(data.occurredAt ? new Date(data.occurredAt).toISOString().slice(0, 16) : '');
+            setAmount(String(data.amount ?? 0));
+            setPlanId(data.planId || data.plan?.id || '');
+            setVendorId(data.vendorId || data.vendor?.id || '');
+            setTypeId(data.typeId || data.type?.id || '');
+            setProjectId(data.projectId || '');
+            setNotes(data.notes || '');
+          }
         }
       } catch (e) {
         console.error('Failed to load data:', e);
@@ -101,7 +125,7 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
       }
     };
     fetchData();
-  }, [expenseId]);
+  }, [expenseId, linkingEnabled]);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -111,6 +135,9 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
     if (Number(amount) <= 0) {
       errors.amount = 'Amount must be greater than 0';
     }
+    if (linkingRequired && !projectId) {
+      errors.projectId = 'Project is required';
+    }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -119,7 +146,7 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const data = {
+    const data: any = {
       occurredAt,
       amount: Number(amount) || 0,
       planId: planId || null,
@@ -127,6 +154,10 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
       typeId: typeId || null,
       notes: notes || null,
     };
+
+    if (linkingEnabled) {
+      data.projectId = projectId || null;
+    }
 
     const result = await submit(async () => {
       if (expenseId) {
@@ -155,7 +186,7 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
     });
 
     if (result && typeof result === 'object' && 'id' in result) {
-      navigate(`/marketing/expenses/${result.id}`);
+      navigate(`/marketing/expenses/${(result as any).id}`);
     }
   };
 
@@ -177,11 +208,7 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
   ];
 
   return (
-    <Page
-      title={expenseId ? 'Edit Expense' : 'New Expense'}
-      breadcrumbs={breadcrumbs}
-      onNavigate={navigate}
-    >
+    <Page title={expenseId ? 'Edit Expense' : 'New Expense'} breadcrumbs={breadcrumbs} onNavigate={navigate}>
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
           {error && (
@@ -194,7 +221,10 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
             label="Date"
             type="datetime-local"
             value={occurredAt}
-            onChange={(v: string) => { setOccurredAt(v); clearFieldError('occurredAt'); }}
+            onChange={(v: string) => {
+              setOccurredAt(v);
+              clearFieldError('occurredAt');
+            }}
             required
             error={fieldErrors.occurredAt}
           />
@@ -202,49 +232,54 @@ export function ExpenseEdit({ id, onNavigate }: ExpenseEditProps) {
           <Input
             label="Amount (USD)"
             value={amount}
-            onChange={(v: string) => { setAmount(v); clearFieldError('amount'); }}
+            onChange={(v: string) => {
+              setAmount(v);
+              clearFieldError('amount');
+            }}
             required
             error={fieldErrors.amount}
             placeholder="0"
           />
 
+          {linkingEnabled ? (
+            <Select
+              label={linkingRequired ? 'Project *' : 'Project (optional)'}
+              options={[
+                { value: '', label: '— None —' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+              value={projectId}
+              onChange={(v: string) => {
+                setProjectId(v);
+                clearFieldError('projectId');
+              }}
+              required={linkingRequired}
+              error={fieldErrors.projectId}
+            />
+          ) : null}
+
           <Select
             label="Plan"
-            options={[
-              { value: '', label: '— None —' },
-              ...plans.map((p) => ({ value: p.id, label: p.title })),
-            ]}
+            options={[{ value: '', label: '— None —' }, ...plans.map((p) => ({ value: p.id, label: p.title }))]}
             value={planId}
             onChange={setPlanId}
           />
 
           <Select
             label="Vendor"
-            options={[
-              { value: '', label: '— None —' },
-              ...vendors.map((v) => ({ value: v.id, label: v.name })),
-            ]}
+            options={[{ value: '', label: '— None —' }, ...vendors.map((v) => ({ value: v.id, label: v.name }))]}
             value={vendorId}
             onChange={setVendorId}
           />
 
           <Select
             label="Activity Type"
-            options={[
-              { value: '', label: '— None —' },
-              ...activityTypes.map((t) => ({ value: t.id, label: t.name })),
-            ]}
+            options={[{ value: '', label: '— None —' }, ...activityTypes.map((t) => ({ value: t.id, label: t.name }))]}
             value={typeId}
             onChange={setTypeId}
           />
 
-          <TextArea
-            label="Notes"
-            value={notes}
-            onChange={setNotes}
-            rows={4}
-            placeholder="Optional notes..."
-          />
+          <TextArea label="Notes" value={notes} onChange={setNotes} rows={4} placeholder="Optional notes..." />
 
           <div className="flex items-center justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
             <Button

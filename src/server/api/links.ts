@@ -2,10 +2,10 @@
  * Marketing Links API (optional)
  *
  * This endpoint is gated behind the pack option `enable_project_linking`.
- * Marketing stays standalone; links are never required.
+ * Marketing stays standalone; links are never required unless the app opts in.
  *
  * GET    /api/marketing/links?marketingEntityType=plan&marketingEntityId=...   -> list links for an entity
- * POST   /api/marketing/links  { marketingEntityType, marketingEntityId, linkedEntityKind, linkedEntityId }
+ * POST   /api/marketing/links  { marketingEntityType, marketingEntityId, linkedEntityKind, linkedEntityId, metadata? }
  * DELETE /api/marketing/links?id=... OR same body fields
  */
 import { NextRequest, NextResponse } from 'next/server';
@@ -39,9 +39,9 @@ export async function GET(request: NextRequest) {
 
     const conditions: any[] = [];
     if (marketingEntityType) conditions.push(eq(marketingEntityLinks.marketingEntityType, marketingEntityType));
-    if (marketingEntityId) conditions.push(eq(marketingEntityLinks.marketingEntityId, marketingEntityId));
+    if (marketingEntityId) conditions.push(eq(marketingEntityLinks.marketingEntityId, marketingEntityId as any));
     if (linkedEntityKind) conditions.push(eq(marketingEntityLinks.linkedEntityKind, linkedEntityKind));
-    if (linkedEntityId) conditions.push(eq(marketingEntityLinks.linkedEntityId, linkedEntityId));
+    if (linkedEntityId) conditions.push(eq(marketingEntityLinks.linkedEntityId, linkedEntityId as any));
 
     let q = db.select().from(marketingEntityLinks);
     if (conditions.length > 0) q = q.where(and(...conditions)) as typeof q;
@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
     const marketingEntityId = String(body?.marketingEntityId || '').trim();
     const linkedEntityKind = String(body?.linkedEntityKind || '').trim();
     const linkedEntityId = String(body?.linkedEntityId || '').trim();
+    const metadata = body?.metadata ?? null;
 
     if (!marketingEntityType) return NextResponse.json({ error: 'marketingEntityType is required' }, { status: 400 });
     if (!marketingEntityId) return NextResponse.json({ error: 'marketingEntityId is required' }, { status: 400 });
@@ -80,11 +81,12 @@ export async function POST(request: NextRequest) {
       .values({
         id: randomUUID(),
         marketingEntityType,
-        marketingEntityId,
+        marketingEntityId: marketingEntityId as any,
         linkedEntityKind,
-        linkedEntityId,
-        createdByUserId: user.sub,
+        linkedEntityId: linkedEntityId as any,
+        metadata: metadata ?? { createdByUserId: user.sub },
         createdAt: now,
+        updatedAt: now,
       })
       .onConflictDoNothing()
       .returning();
@@ -128,9 +130,9 @@ export async function DELETE(request: NextRequest) {
       .where(
         and(
           eq(marketingEntityLinks.marketingEntityType, marketingEntityType),
-          eq(marketingEntityLinks.marketingEntityId, marketingEntityId),
+          eq(marketingEntityLinks.marketingEntityId, marketingEntityId as any),
           eq(marketingEntityLinks.linkedEntityKind, linkedEntityKind),
-          eq(marketingEntityLinks.linkedEntityId, linkedEntityId)
+          eq(marketingEntityLinks.linkedEntityId, linkedEntityId as any)
         )
       );
 
@@ -140,5 +142,3 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to delete link' }, { status: 500 });
   }
 }
-
-

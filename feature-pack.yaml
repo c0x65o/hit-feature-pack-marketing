@@ -218,3 +218,7 @@ config:
       type: boolean
       default: false
       description: "Enable optional project linking UI + APIs. Marketing remains standalone; links are never required."
+    require_project_linking:
+      type: boolean
+      default: false
+      description: "When project linking is enabled, require a project to be selected for plans/expenses."

@@ -14,6 +14,7 @@ import {
 } from '@/lib/feature-pack-schemas';
 import { and, asc, desc, eq, gte, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+import { getProjectLinkingPolicy, isUuid, setLinkedProjectId } from '../lib/project-linking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -97,7 +98,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Total count for pagination
-    const countQuery = db.select({ count: sql<number>`count(*)` }).from(marketingExpenses)
+    const countQuery = db
+      .select({ count: sql<number>`count(*)` })
+      .from(marketingExpenses)
       .leftJoin(marketingPlans, eq(marketingExpenses.planId, marketingPlans.id))
       .leftJoin(marketingActivityTypes, eq(marketingExpenses.typeId, marketingActivityTypes.id))
       .leftJoin(marketingVendors, eq(marketingExpenses.vendorId, marketingVendors.id));
@@ -147,13 +150,23 @@ export async function POST(request: NextRequest) {
     const db = getDb();
     const body = await request.json();
 
-    const { planId, typeId, vendorId, occurredAt, amount, notes, attachmentUrl } = body || {};
+    const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
+
+    const { planId, typeId, vendorId, occurredAt, amount, notes, attachmentUrl, projectId } = body || {};
 
     if (!occurredAt) return NextResponse.json({ error: 'occurredAt is required' }, { status: 400 });
 
     const amountNum = Number(amount);
     if (!Number.isFinite(amountNum) || amountNum <= 0) {
       return NextResponse.json({ error: 'amount must be a positive number' }, { status: 400 });
+    }
+
+    const projectIdStr = projectId ? String(projectId).trim() : '';
+    if (linkingRequired && !projectIdStr) {
+      return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+    }
+    if (projectIdStr && !isUuid(projectIdStr)) {
+      return NextResponse.json({ error: 'projectId must be a UUID' }, { status: 400 });
     }
 
     if (planId) {
@@ -192,11 +205,13 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    if (linkingEnabled) {
+      await setLinkedProjectId(db, 'expense', String(created.id), projectIdStr || null);
+    }
+
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error('Error creating expense:', error);
     return NextResponse.json({ error: 'Failed to create expense' }, { status: 500 });
   }
 }
-
-

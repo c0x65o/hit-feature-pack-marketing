@@ -13,8 +13,10 @@ import {
   marketingExpenses,
   marketingActivityTypes,
   marketingVendors,
+  marketingEntityLinks,
 } from '@/lib/feature-pack-schemas';
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
+import { getProjectLinkingPolicy, getLinkedProjectId, isUuid, setLinkedProjectId } from '../lib/project-linking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -84,6 +86,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const budget = Number(row.plan.budgetAmount || 0);
     const actual = Number(spendRow?.actualAmount || 0);
 
+    const { enabled: linkingEnabled } = getProjectLinkingPolicy(request);
+    const projectId = linkingEnabled ? await getLinkedProjectId(db, 'plan', id) : null;
+
     return NextResponse.json({
       ...row.plan,
       budgetAmount: budget,
@@ -91,6 +96,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       remainingAmount: budget - actual,
       type: row.type || null,
       expenses,
+      projectId,
     });
   } catch (error) {
     console.error('Error fetching plan:', error);
@@ -112,6 +118,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     if (!existing) return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
 
+    const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
+
+    // Optional project link update
+    const projectIdStr = body.projectId !== undefined && body.projectId !== null ? String(body.projectId).trim() : '';
+    if (linkingEnabled && linkingRequired && body.projectId !== undefined && !projectIdStr) {
+      return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+    }
+    if (projectIdStr && !isUuid(projectIdStr)) {
+      return NextResponse.json({ error: 'projectId must be a UUID' }, { status: 400 });
+    }
+
     const updateData: any = { updatedAt: new Date() };
     if (body.title !== undefined) updateData.title = String(body.title || '').trim();
     if (body.typeId !== undefined) updateData.typeId = body.typeId ? String(body.typeId) : null;
@@ -129,8 +146,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     await db.update(marketingPlans).set(updateData).where(eq(marketingPlans.id, id as any));
 
+    // Apply project link change after plan update.
+    if (linkingEnabled && body.projectId !== undefined) {
+      await setLinkedProjectId(db, 'plan', id, projectIdStr || null);
+    }
+
     const [updated] = await db.select().from(marketingPlans).where(eq(marketingPlans.id, id as any)).limit(1);
-    return NextResponse.json(updated);
+
+    const projectId = linkingEnabled ? await getLinkedProjectId(db, 'plan', id) : null;
+    return NextResponse.json({ ...updated, projectId });
   } catch (error) {
     console.error('Error updating plan:', error);
     return NextResponse.json({ error: 'Failed to update plan' }, { status: 500 });
@@ -153,6 +177,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     if (hard) {
       await db.delete(marketingPlans).where(eq(marketingPlans.id, id as any));
+      // Clean up links (no FK cascade)
+      await db
+        .delete(marketingEntityLinks)
+        .where(and(eq(marketingEntityLinks.marketingEntityType, 'plan'), eq(marketingEntityLinks.marketingEntityId, id as any)));
       return NextResponse.json({ success: true, deleted: true });
     }
 
@@ -163,5 +191,3 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Failed to delete plan' }, { status: 500 });
   }
 }
-
-

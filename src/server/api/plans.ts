@@ -7,8 +7,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingPlans, marketingPlanTypes, marketingExpenses } from '@/lib/feature-pack-schemas';
-import { and, asc, desc, eq, gte, inArray, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+import { getProjectLinkingPolicy, isUuid, setLinkedProjectId } from '../lib/project-linking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -89,13 +90,7 @@ export async function GET(request: NextRequest) {
           spendAmount: sql<number>`coalesce(sum(${marketingExpenses.amount}), 0)`,
         })
         .from(marketingExpenses)
-        .where(
-          and(
-            inArray(marketingExpenses.planId, planIds as any),
-            gte(marketingExpenses.occurredAt, start),
-            lte(marketingExpenses.occurredAt, end)
-          )
-        )
+        .where(and(inArray(marketingExpenses.planId, planIds as any), gte(marketingExpenses.occurredAt, start), lte(marketingExpenses.occurredAt, end)))
         .groupBy(marketingExpenses.planId);
 
       for (const r of spendRows) {
@@ -121,7 +116,9 @@ export async function POST(request: NextRequest) {
     const db = getDb();
     const body = await request.json();
 
-    const { title, typeId, budgetAmount, startDate, endDate, allocateByType = false } = body || {};
+    const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
+
+    const { title, typeId, budgetAmount, startDate, endDate, allocateByType = false, projectId } = body || {};
 
     if (!title?.trim()) {
       return NextResponse.json({ error: 'title is required' }, { status: 400 });
@@ -130,6 +127,14 @@ export async function POST(request: NextRequest) {
     const budgetNum = Number(budgetAmount ?? 0);
     if (!Number.isFinite(budgetNum) || budgetNum < 0) {
       return NextResponse.json({ error: 'budgetAmount must be a valid non-negative number' }, { status: 400 });
+    }
+
+    const projectIdStr = projectId ? String(projectId).trim() : '';
+    if (linkingRequired && !projectIdStr) {
+      return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+    }
+    if (projectIdStr && !isUuid(projectIdStr)) {
+      return NextResponse.json({ error: 'projectId must be a UUID' }, { status: 400 });
     }
 
     if (typeId) {
@@ -150,7 +155,7 @@ export async function POST(request: NextRequest) {
         title: String(title).trim(),
         typeId: typeId ? String(typeId) : null,
         budgetAmount: String(budgetNum),
-        spendAmount: '0', // Initial spend is zero, updated as expenses are added
+        spendAmount: '0',
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         allocateByType: Boolean(allocateByType),
@@ -160,11 +165,14 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    // Optional project link (stored in marketing_entity_links)
+    if (linkingEnabled) {
+      await setLinkedProjectId(db, 'plan', String(created.id), projectIdStr || null);
+    }
+
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error('Error creating plan:', error);
     return NextResponse.json({ error: 'Failed to create plan' }, { status: 500 });
   }
 }
-
-

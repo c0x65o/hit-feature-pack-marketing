@@ -1,27 +1,70 @@
 /**
  * Marketing Expense Detail API
  *
- * GET    - Get expense by id
+ * GET    - Get expense by id (with joined plan/vendor/type)
  * PUT    - Update expense
  * DELETE - Delete expense
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { marketingExpenses, marketingPlans, marketingActivityTypes, marketingVendors } from '@/lib/feature-pack-schemas';
-import { eq } from 'drizzle-orm';
+import {
+  marketingExpenses,
+  marketingPlans,
+  marketingActivityTypes,
+  marketingVendors,
+  marketingEntityLinks,
+} from '@/lib/feature-pack-schemas';
+import { and, eq } from 'drizzle-orm';
+import { getProjectLinkingPolicy, getLinkedProjectId, isUuid, setLinkedProjectId } from '../lib/project-linking';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const db = getDb();
     const { id } = await params;
-    const [expense] = await db.select().from(marketingExpenses).where(eq(marketingExpenses.id, id as any)).limit(1);
-    if (!expense) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
-    return NextResponse.json({ ...expense, amount: Number(expense.amount || 0) });
+
+    const [row] = await db
+      .select({
+        expense: marketingExpenses,
+        plan: {
+          id: marketingPlans.id,
+          title: marketingPlans.title,
+        },
+        type: {
+          id: marketingActivityTypes.id,
+          name: marketingActivityTypes.name,
+          color: marketingActivityTypes.color,
+        },
+        vendor: {
+          id: marketingVendors.id,
+          name: marketingVendors.name,
+          kind: marketingVendors.kind,
+        },
+      })
+      .from(marketingExpenses)
+      .leftJoin(marketingPlans, eq(marketingExpenses.planId, marketingPlans.id))
+      .leftJoin(marketingActivityTypes, eq(marketingExpenses.typeId, marketingActivityTypes.id))
+      .leftJoin(marketingVendors, eq(marketingExpenses.vendorId, marketingVendors.id))
+      .where(eq(marketingExpenses.id, id as any))
+      .limit(1);
+
+    if (!row) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+
+    const { enabled: linkingEnabled } = getProjectLinkingPolicy(request);
+    const projectId = linkingEnabled ? await getLinkedProjectId(db, 'expense', id) : null;
+
+    return NextResponse.json({
+      ...row.expense,
+      amount: Number(row.expense.amount || 0),
+      plan: row.plan || null,
+      type: row.type || null,
+      vendor: row.vendor || null,
+      projectId,
+    });
   } catch (error) {
     console.error('Error fetching expense:', error);
     return NextResponse.json({ error: 'Failed to fetch expense' }, { status: 500 });
@@ -36,6 +79,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const [existing] = await db.select({ id: marketingExpenses.id }).from(marketingExpenses).where(eq(marketingExpenses.id, id as any)).limit(1);
     if (!existing) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+
+    const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
+
+    const projectIdStr = body.projectId !== undefined && body.projectId !== null ? String(body.projectId).trim() : '';
+    if (linkingEnabled && linkingRequired && body.projectId !== undefined && !projectIdStr) {
+      return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
+    }
+    if (projectIdStr && !isUuid(projectIdStr)) {
+      return NextResponse.json({ error: 'projectId must be a UUID' }, { status: 400 });
+    }
 
     if (body.planId) {
       const [plan] = await db.select({ id: marketingPlans.id }).from(marketingPlans).where(eq(marketingPlans.id, body.planId as any)).limit(1);
@@ -73,15 +126,43 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (body.attachmentUrl !== undefined) updateData.attachmentUrl = body.attachmentUrl || null;
 
     await db.update(marketingExpenses).set(updateData).where(eq(marketingExpenses.id, id as any));
-    const [updated] = await db.select().from(marketingExpenses).where(eq(marketingExpenses.id, id as any)).limit(1);
-    return NextResponse.json({ ...updated, amount: Number(updated.amount || 0) });
+
+    if (linkingEnabled && body.projectId !== undefined) {
+      await setLinkedProjectId(db, 'expense', id, projectIdStr || null);
+    }
+
+    // Return enriched row
+    const [row] = await db
+      .select({
+        expense: marketingExpenses,
+        plan: { id: marketingPlans.id, title: marketingPlans.title },
+        type: { id: marketingActivityTypes.id, name: marketingActivityTypes.name, color: marketingActivityTypes.color },
+        vendor: { id: marketingVendors.id, name: marketingVendors.name, kind: marketingVendors.kind },
+      })
+      .from(marketingExpenses)
+      .leftJoin(marketingPlans, eq(marketingExpenses.planId, marketingPlans.id))
+      .leftJoin(marketingActivityTypes, eq(marketingExpenses.typeId, marketingActivityTypes.id))
+      .leftJoin(marketingVendors, eq(marketingExpenses.vendorId, marketingVendors.id))
+      .where(eq(marketingExpenses.id, id as any))
+      .limit(1);
+
+    const projectId = linkingEnabled ? await getLinkedProjectId(db, 'expense', id) : null;
+
+    return NextResponse.json({
+      ...row.expense,
+      amount: Number(row.expense.amount || 0),
+      plan: row.plan || null,
+      type: row.type || null,
+      vendor: row.vendor || null,
+      projectId,
+    });
   } catch (error) {
     console.error('Error updating expense:', error);
     return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 });
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const db = getDb();
     const { id } = await params;
@@ -90,11 +171,15 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     if (!existing) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
 
     await db.delete(marketingExpenses).where(eq(marketingExpenses.id, id as any));
+
+    // Clean up links (no FK cascade)
+    await db
+      .delete(marketingEntityLinks)
+      .where(and(eq(marketingEntityLinks.marketingEntityType, 'expense'), eq(marketingEntityLinks.marketingEntityId, id as any)));
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting expense:', error);
     return NextResponse.json({ error: 'Failed to delete expense' }, { status: 500 });
   }
 }
-
-
