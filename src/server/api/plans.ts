@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingPlans, marketingPlanTypes, marketingExpenses } from '@/lib/feature-pack-schemas';
-import { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,6 +26,28 @@ export async function GET(request: NextRequest) {
     const includeArchived = searchParams.get('includeArchived') === 'true';
     const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const search = (searchParams.get('search') || '').trim();
+    const sortBy = (searchParams.get('sortBy') || 'createdAt').trim();
+    const sortOrder = (searchParams.get('sortOrder') || 'desc').trim();
+
+    const sortColumns: Record<string, AnyColumn> = {
+      title: marketingPlans.title,
+      createdAt: marketingPlans.createdAt,
+      updatedAt: marketingPlans.updatedAt,
+      budgetAmount: marketingPlans.budgetAmount,
+      isArchived: marketingPlans.isArchived,
+    };
+    const orderCol = sortColumns[sortBy] ?? marketingPlans.createdAt;
+    const orderDirection = sortOrder === 'asc' ? asc(orderCol) : desc(orderCol);
+
+    const conditions: any[] = [];
+    if (!includeArchived) {
+      conditions.push(eq(marketingPlans.isArchived, false));
+    }
+    if (search) {
+      conditions.push(or(like(marketingPlans.title, `%${search}%`))!);
+    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     let query = db
       .select({
@@ -38,13 +60,18 @@ export async function GET(request: NextRequest) {
       })
       .from(marketingPlans)
       .leftJoin(marketingPlanTypes, eq(marketingPlans.typeId, marketingPlanTypes.id))
-      .orderBy(desc(marketingPlans.createdAt))
+      .orderBy(orderDirection)
       .limit(limit)
       .offset(offset);
 
-    if (!includeArchived) {
-      query = query.where(eq(marketingPlans.isArchived, false)) as typeof query;
+    if (whereClause) {
+      query = query.where(whereClause) as typeof query;
     }
+
+    // Total count (for pagination UI)
+    const countQuery = db.select({ count: sql<number>`count(*)` }).from(marketingPlans);
+    const [countRow] = whereClause ? await countQuery.where(whereClause) : await countQuery;
+    const total = Number(countRow?.count || 0);
 
     const rows = await query;
     const plans = rows.map(({ plan, type }: any) => ({ ...plan, type: type || null }));
@@ -81,7 +108,7 @@ export async function GET(request: NextRequest) {
       monthSpendAmount: Number(spendByPlan[String(p.id)] || 0),
     }));
 
-    return NextResponse.json({ items, limit, offset });
+    return NextResponse.json({ items, total, limit, offset });
   } catch (error) {
     console.error('Error fetching plans:', error);
     return NextResponse.json({ error: 'Failed to fetch plans' }, { status: 500 });

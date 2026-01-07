@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingActivityTypes } from '@/lib/feature-pack-schemas';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, like, or, sql } from 'drizzle-orm';
 import { extractUserFromRequest, isAdmin } from '../auth';
 
 export const dynamic = 'force-dynamic';
@@ -19,16 +19,29 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('activeOnly') !== 'false';
     const category = searchParams.get('category');
+    const search = (searchParams.get('search') || '').trim();
+    const limit = Math.min(parseInt(searchParams.get('limit') || '200', 10), 500);
+    const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
+
+    const conditions: any[] = [];
+    if (activeOnly) conditions.push(eq(marketingActivityTypes.isActive, true));
+    if (category) conditions.push(eq(marketingActivityTypes.category, category));
+    if (search) {
+      conditions.push(or(like(marketingActivityTypes.name, `%${search}%`), like(marketingActivityTypes.key, `%${search}%`))!);
+    }
 
     let query = db
       .select()
       .from(marketingActivityTypes)
       .orderBy(asc(marketingActivityTypes.sortOrder), asc(marketingActivityTypes.name));
-    if (activeOnly) query = query.where(eq(marketingActivityTypes.isActive, true)) as typeof query;
+    if (conditions.length > 0) query = query.where(and(...conditions)) as typeof query;
 
-    const items = await query;
-    const filtered = category ? items.filter((it: any) => it.category === category) : items;
-    return NextResponse.json({ items: filtered });
+    const countQuery = db.select({ count: sql<number>`count(*)` }).from(marketingActivityTypes);
+    const [countRow] = conditions.length > 0 ? await countQuery.where(and(...conditions)) : await countQuery;
+    const total = Number(countRow?.count || 0);
+
+    const items = await (query as any).limit(limit).offset(offset);
+    return NextResponse.json({ items, total, limit, offset });
   } catch (error) {
     console.error('Error fetching activity types:', error);
     return NextResponse.json({ error: 'Failed to fetch activity types' }, { status: 500 });

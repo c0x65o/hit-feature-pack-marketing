@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUi } from '@hit/ui-kit';
+import { useServerDataTableState } from '@hit/ui-kit';
 import { Building2, Plus } from 'lucide-react';
 
 type Vendor = {
@@ -15,8 +16,17 @@ type Vendor = {
 export function VendorsList() {
   const { Page, Card, Badge, Spinner, Alert, DataTable, Button, Modal, Input, TextArea } = useUi();
   const [items, setItems] = useState<Vendor[]>([]);
+  const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const serverTable = useServerDataTableState({
+    tableId: 'marketing.vendors',
+    pageSize: 25,
+    initialSort: { sortBy: 'name', sortOrder: 'asc' },
+    // Server supports search, but only sorts by name today (API orderBy name); keep whitelist minimal.
+    sortWhitelist: ['name'],
+  });
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -30,16 +40,23 @@ export function VendorsList() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/marketing/vendors?activeOnly=false');
+      const params = new URLSearchParams();
+      params.set('activeOnly', 'false');
+      params.set('limit', String(serverTable.query.pageSize));
+      params.set('offset', String((serverTable.query.page - 1) * serverTable.query.pageSize));
+      if (serverTable.query.search) params.set('search', serverTable.query.search);
+
+      const res = await fetch(`/api/marketing/vendors?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch vendors');
       const data = await res.json();
       setItems(data.items || []);
+      setTotal(Number(data.total || 0));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load vendors');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [serverTable.query.page, serverTable.query.pageSize, serverTable.query.search]);
 
   useEffect(() => {
     fetchVendors();
@@ -118,7 +135,8 @@ export function VendorsList() {
             searchable
             exportable
             showColumnVisibility
-            tableId="marketing.vendors"
+            total={total}
+            {...serverTable.dataTable}
             onRefresh={fetchVendors}
             refreshing={loading}
             searchDebounceMs={400}

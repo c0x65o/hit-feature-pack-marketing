@@ -12,7 +12,7 @@ import {
   marketingActivityTypes,
   marketingVendors,
 } from '@/lib/feature-pack-schemas';
-import { and, desc, eq, gte, isNull, lte, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -28,8 +28,19 @@ export async function GET(request: NextRequest) {
     const unassignedOnly = searchParams.get('unassignedOnly') === 'true';
     const fromDate = searchParams.get('fromDate');
     const toDate = searchParams.get('toDate');
+    const search = (searchParams.get('search') || '').trim();
     const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const sortBy = (searchParams.get('sortBy') || 'occurredAt').trim();
+    const sortOrder = (searchParams.get('sortOrder') || 'desc').trim();
+
+    const sortColumns: Record<string, AnyColumn> = {
+      occurredAt: marketingExpenses.occurredAt,
+      amount: marketingExpenses.amount,
+      createdAt: marketingExpenses.createdAt,
+    };
+    const orderCol = sortColumns[sortBy] ?? marketingExpenses.occurredAt;
+    const orderDirection = sortOrder === 'asc' ? asc(orderCol) : desc(orderCol);
 
     const conditions: any[] = [];
     if (unassignedOnly) {
@@ -41,6 +52,18 @@ export async function GET(request: NextRequest) {
     if (vendorId) conditions.push(eq(marketingExpenses.vendorId, vendorId as any));
     if (fromDate) conditions.push(gte(marketingExpenses.occurredAt, new Date(fromDate)));
     if (toDate) conditions.push(lte(marketingExpenses.occurredAt, new Date(toDate)));
+
+    // Search across notes + joined plan/vendor/type names
+    if (search) {
+      conditions.push(
+        or(
+          like(marketingExpenses.notes, `%${search}%`),
+          like(marketingPlans.title, `%${search}%`),
+          like(marketingVendors.name, `%${search}%`),
+          like(marketingActivityTypes.name, `%${search}%`)
+        )!
+      );
+    }
 
     let query = db
       .select({
@@ -64,13 +87,21 @@ export async function GET(request: NextRequest) {
       .leftJoin(marketingPlans, eq(marketingExpenses.planId, marketingPlans.id))
       .leftJoin(marketingActivityTypes, eq(marketingExpenses.typeId, marketingActivityTypes.id))
       .leftJoin(marketingVendors, eq(marketingExpenses.vendorId, marketingVendors.id))
-      .orderBy(desc(marketingExpenses.occurredAt), desc(marketingExpenses.createdAt))
+      .orderBy(orderDirection, desc(marketingExpenses.createdAt))
       .limit(limit)
       .offset(offset);
 
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as typeof query;
     }
+
+    // Total count for pagination
+    const countQuery = db.select({ count: sql<number>`count(*)` }).from(marketingExpenses)
+      .leftJoin(marketingPlans, eq(marketingExpenses.planId, marketingPlans.id))
+      .leftJoin(marketingActivityTypes, eq(marketingExpenses.typeId, marketingActivityTypes.id))
+      .leftJoin(marketingVendors, eq(marketingExpenses.vendorId, marketingVendors.id));
+    const [countRow] = conditions.length > 0 ? await (countQuery as any).where(and(...conditions)) : await countQuery;
+    const total = Number((countRow as any)?.count || 0);
 
     const rows = await query;
     const items = rows.map(({ expense, plan, type, vendor }: any) => ({
@@ -83,20 +114,26 @@ export async function GET(request: NextRequest) {
 
     const includeTotals = searchParams.get('includeTotals') === 'true';
     if (!includeTotals) {
-      return NextResponse.json({ items, limit, offset });
+      return NextResponse.json({ items, total, limit, offset });
     }
 
-    let totalsQuery = db.select({ totalAmount: sql<number>`coalesce(sum(${marketingExpenses.amount}), 0)` }).from(marketingExpenses);
+    let totalsQuery = db
+      .select({ totalAmount: sql<number>`coalesce(sum(${marketingExpenses.amount}), 0)` })
+      .from(marketingExpenses)
+      .leftJoin(marketingPlans, eq(marketingExpenses.planId, marketingPlans.id))
+      .leftJoin(marketingActivityTypes, eq(marketingExpenses.typeId, marketingActivityTypes.id))
+      .leftJoin(marketingVendors, eq(marketingExpenses.vendorId, marketingVendors.id));
     if (conditions.length > 0) {
-      totalsQuery = totalsQuery.where(and(...conditions)) as typeof totalsQuery;
+      totalsQuery = (totalsQuery as any).where(and(...conditions)) as typeof totalsQuery;
     }
     const [totalsRow] = await totalsQuery;
 
     return NextResponse.json({
       items,
+      total,
       limit,
       offset,
-      totals: { totalAmount: Number(totalsRow?.totalAmount || 0), count: items.length },
+      totals: { totalAmount: Number(totalsRow?.totalAmount || 0), count: total },
     });
   } catch (error) {
     console.error('Error fetching expenses:', error);

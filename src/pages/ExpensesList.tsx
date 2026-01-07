@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUi } from '@hit/ui-kit';
+import { useServerDataTableState } from '@hit/ui-kit';
 import { Plus, Receipt } from 'lucide-react';
 
 type Plan = { id: string; title: string };
@@ -27,8 +28,16 @@ export function ExpensesList() {
 
   const [items, setItems] = useState<ExpenseRow[]>([]);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const serverTable = useServerDataTableState({
+    tableId: 'marketing.expenses',
+    pageSize: 25,
+    initialSort: { sortBy: 'occurredAt', sortOrder: 'desc' },
+    sortWhitelist: ['occurredAt', 'amount', 'createdAt'],
+  });
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -47,16 +56,25 @@ export function ExpensesList() {
     try {
       setLoading(true);
       setError(null);
+      const q = new URLSearchParams();
+      q.set('limit', String(serverTable.query.pageSize));
+      q.set('offset', String((serverTable.query.page - 1) * serverTable.query.pageSize));
+      q.set('includeTotals', 'true');
+      if (serverTable.query.search) q.set('search', serverTable.query.search);
+      if (serverTable.query.sortBy) q.set('sortBy', serverTable.query.sortBy);
+      if (serverTable.query.sortOrder) q.set('sortOrder', serverTable.query.sortOrder);
+
       const [eRes, pRes, vRes, tRes] = await Promise.all([
-        fetch('/api/marketing/expenses?limit=500&includeTotals=true'),
-        fetch('/api/marketing/plans?limit=500'),
-        fetch('/api/marketing/vendors?activeOnly=true'),
-        fetch('/api/marketing/activity-types?activeOnly=true'),
+        fetch(`/api/marketing/expenses?${q.toString()}`),
+        fetch('/api/marketing/plans?limit=500&offset=0'),
+        fetch('/api/marketing/vendors?activeOnly=true&limit=500&offset=0'),
+        fetch('/api/marketing/activity-types?activeOnly=true&limit=500&offset=0'),
       ]);
       if (!eRes.ok) throw new Error('Failed to fetch expenses');
       const eData = await eRes.json();
       setItems(eData.items || []);
       setTotalAmount(Number(eData?.totals?.totalAmount || 0));
+      setTotal(Number(eData?.total || 0));
       if (pRes.ok) {
         const pData = await pRes.json();
         setPlans((pData.items || []).map((p: any) => ({ id: String(p.id), title: String(p.title) })));
@@ -74,7 +92,13 @@ export function ExpensesList() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [
+    serverTable.query.page,
+    serverTable.query.pageSize,
+    serverTable.query.search,
+    serverTable.query.sortBy,
+    serverTable.query.sortOrder,
+  ]);
 
   useEffect(() => {
     fetchAll();
@@ -82,11 +106,11 @@ export function ExpensesList() {
 
   const columns = useMemo(
     () => [
-      { key: 'occurredAt', label: 'Date', render: (_v: unknown, row: ExpenseRow) => new Date(row.occurredAt).toLocaleDateString() },
+      { key: 'occurredAt', label: 'Date', sortable: true, render: (_v: unknown, row: ExpenseRow) => new Date(row.occurredAt).toLocaleDateString() },
       { key: 'plan', label: 'Plan', render: (_v: unknown, row: ExpenseRow) => row.plan?.title || '—' },
       { key: 'vendor', label: 'Vendor', render: (_v: unknown, row: ExpenseRow) => row.vendor?.name || '—' },
       { key: 'type', label: 'Type', render: (_v: unknown, row: ExpenseRow) => row.type?.name || '—' },
-      { key: 'amount', label: 'Amount', render: (_v: unknown, row: ExpenseRow) => <span className="font-mono">{formatUsd(row.amount)}</span> },
+      { key: 'amount', label: 'Amount', sortable: true, render: (_v: unknown, row: ExpenseRow) => <span className="font-mono">{formatUsd(row.amount)}</span> },
       { key: 'notes', label: 'Notes', render: (_v: unknown, row: ExpenseRow) => row.notes || '—' },
     ],
     []
@@ -143,7 +167,7 @@ export function ExpensesList() {
       ) : null}
 
       <div className="mb-3 text-sm text-muted-foreground">
-        Total (loaded): <span className="font-mono">{formatUsd(totalAmount)}</span>
+        Total (filtered): <span className="font-mono">{formatUsd(totalAmount)}</span>
       </div>
 
       <Card>
@@ -160,7 +184,8 @@ export function ExpensesList() {
             searchable
             exportable
             showColumnVisibility
-            tableId="marketing.expenses"
+            total={total}
+            {...serverTable.dataTable}
             onRefresh={fetchAll}
             refreshing={loading}
             searchDebounceMs={400}

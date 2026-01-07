@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useUi, ColorPicker } from '@hit/ui-kit';
+import { useServerDataTableState } from '@hit/ui-kit';
 import { List, Plus } from 'lucide-react';
 
 type ActivityType = {
@@ -19,8 +20,15 @@ type ActivityType = {
 export function ActivityTypesSetup() {
   const { Page, Card, Badge, Spinner, Alert, DataTable, Button, Modal, Input, TextArea } = useUi();
   const [items, setItems] = useState<ActivityType[]>([]);
+  const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const serverTable = useServerDataTableState({
+    tableId: 'marketing.activity-types',
+    pageSize: 25,
+    initialSort: { sortBy: 'name', sortOrder: 'asc' },
+  });
 
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -35,16 +43,22 @@ export function ActivityTypesSetup() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/marketing/activity-types?activeOnly=false');
+      const params = new URLSearchParams();
+      params.set('activeOnly', 'false');
+      params.set('limit', String(serverTable.query.pageSize));
+      params.set('offset', String((serverTable.query.page - 1) * serverTable.query.pageSize));
+      if (serverTable.query.search) params.set('search', serverTable.query.search);
+      const res = await fetch(`/api/marketing/activity-types?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch activity types');
       const data = await res.json();
       setItems(data.items || []);
+      setTotal(Number(data.total || 0));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load activity types');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [serverTable.query.page, serverTable.query.pageSize, serverTable.query.search]);
 
   useEffect(() => {
     fetchTypes();
@@ -134,7 +148,8 @@ export function ActivityTypesSetup() {
             searchable
             exportable
             showColumnVisibility
-            tableId="marketing.activity-types"
+            total={total}
+            {...serverTable.dataTable}
             onRefresh={fetchTypes}
             refreshing={loading}
             searchDebounceMs={400}

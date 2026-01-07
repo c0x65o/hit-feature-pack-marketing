@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingVendors } from '@/lib/feature-pack-schemas';
-import { and, asc, eq, like, or } from 'drizzle-orm';
+import { and, asc, eq, like, or, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
     const activeOnly = searchParams.get('activeOnly') !== 'false';
     const kind = searchParams.get('kind');
     const search = searchParams.get('search');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
+    const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
     const conditions: any[] = [];
     if (activeOnly) conditions.push(eq(marketingVendors.isActive, true));
@@ -30,8 +32,13 @@ export async function GET(request: NextRequest) {
     let query = db.select().from(marketingVendors).orderBy(asc(marketingVendors.name));
     if (conditions.length > 0) query = query.where(and(...conditions)) as typeof query;
 
-    const items = await query;
-    return NextResponse.json({ items });
+    // Total count (for pagination UI)
+    const countQuery = db.select({ count: sql<number>`count(*)` }).from(marketingVendors);
+    const [countResult] = conditions.length > 0 ? await countQuery.where(and(...conditions)) : await countQuery;
+    const total = Number(countResult?.count || 0);
+
+    const items = await (query as any).limit(limit).offset(offset);
+    return NextResponse.json({ items, total, limit, offset });
   } catch (error) {
     console.error('Error fetching vendors:', error);
     return NextResponse.json({ error: 'Failed to fetch vendors' }, { status: 500 });
