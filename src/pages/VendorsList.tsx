@@ -89,16 +89,6 @@ export function VendorsList() {
     }
   };
 
-  if (loading) {
-    return (
-      <Page title="Vendors">
-        <div className="flex items-center justify-center p-12">
-          <Spinner size="lg" />
-        </div>
-      </Page>
-    );
-  }
-
   return (
     <Page
       title="Marketing Vendors"
@@ -115,13 +105,25 @@ export function VendorsList() {
       ) : null}
 
       <Card>
-        {items.length === 0 ? (
+        {items.length === 0 && !loading ? (
           <div className="p-10 text-center text-muted-foreground">
             <Building2 size={40} className="mx-auto mb-3 opacity-60" />
             No vendors yet.
           </div>
         ) : (
-          <DataTable data={items} columns={columns} onRowClick={() => {}} />
+          <DataTable
+            data={items}
+            columns={columns}
+            loading={loading}
+            searchable
+            exportable
+            showColumnVisibility
+            tableId="marketing.vendors"
+            onRefresh={fetchVendors}
+            refreshing={loading}
+            searchDebounceMs={400}
+            onRowClick={() => {}}
+          />
         )}
       </Card>
 

@@ -105,16 +105,6 @@ export function ActivityTypesSetup() {
     }
   };
 
-  if (loading) {
-    return (
-      <Page title="Activity Types">
-        <div className="flex items-center justify-center p-12">
-          <Spinner size="lg" />
-        </div>
-      </Page>
-    );
-  }
-
   return (
     <Page
       title="Activity Types"
@@ -131,13 +121,25 @@ export function ActivityTypesSetup() {
       ) : null}
 
       <Card>
-        {items.length === 0 ? (
+        {items.length === 0 && !loading ? (
           <div className="p-10 text-center text-muted-foreground">
             <List size={40} className="mx-auto mb-3 opacity-60" />
             No activity types yet.
           </div>
         ) : (
-          <DataTable data={items} columns={columns} onRowClick={() => {}} />
+          <DataTable
+            data={items}
+            columns={columns}
+            loading={loading}
+            searchable
+            exportable
+            showColumnVisibility
+            tableId="marketing.activity-types"
+            onRefresh={fetchTypes}
+            refreshing={loading}
+            searchDebounceMs={400}
+            onRowClick={() => {}}
+          />
         )}
       </Card>
 

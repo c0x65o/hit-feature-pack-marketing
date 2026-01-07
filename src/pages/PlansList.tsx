@@ -132,16 +132,6 @@ export function PlansList() {
     }
   };
 
-  if (loading) {
-    return (
-      <Page title="Marketing Plans">
-        <div className="flex items-center justify-center p-12">
-          <Spinner size="lg" />
-        </div>
-      </Page>
-    );
-  }
-
   return (
     <Page
       title="Marketing Plans"
@@ -158,13 +148,25 @@ export function PlansList() {
       ) : null}
 
       <Card>
-        {plans.length === 0 ? (
+        {plans.length === 0 && !loading ? (
           <div className="p-10 text-center text-muted-foreground">
             <Calendar size={40} className="mx-auto mb-3 opacity-60" />
             No plans yet.
           </div>
         ) : (
-          <DataTable data={plans} columns={columns} onRowClick={(row: any) => router.push(`/marketing/plans/${row?.id}`)} />
+          <DataTable
+            data={plans}
+            columns={columns}
+            loading={loading}
+            searchable
+            exportable
+            showColumnVisibility
+            tableId="marketing.plans"
+            onRefresh={fetchAll}
+            refreshing={loading}
+            searchDebounceMs={400}
+            onRowClick={(row: any) => router.push(`/marketing/plans/${row?.id}`)}
+          />
         )}
       </Card>
 
