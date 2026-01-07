@@ -13,6 +13,7 @@ import {
   marketingExpenses,
 } from '@/lib/feature-pack-schemas';
 import { and, eq, sql } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const [created] = await db
           .insert(marketingPlanTypeBudgets)
           .values({
+            id: randomUUID(),
             planId: planId as any,
             activityTypeId: String(activityTypeId),
             plannedAmount: String(plannedAmount),

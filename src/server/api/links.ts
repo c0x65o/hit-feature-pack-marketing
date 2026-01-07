@@ -13,6 +13,7 @@ import { getDb } from '@/lib/db';
 import { marketingEntityLinks } from '@/lib/feature-pack-schemas';
 import { and, eq } from 'drizzle-orm';
 import { extractUserFromRequest, getMarketingOptionsFromRequest } from '../auth';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
     const [created] = await db
       .insert(marketingEntityLinks)
       .values({
+        id: randomUUID(),
         marketingEntityType,
         marketingEntityId,
         linkedEntityKind,

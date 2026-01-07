@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingPlans, marketingPlanTypes, marketingExpenses } from '@/lib/feature-pack-schemas';
 import { and, asc, desc, eq, gte, inArray, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -145,9 +146,11 @@ export async function POST(request: NextRequest) {
     const [created] = await db
       .insert(marketingPlans)
       .values({
+        id: randomUUID(),
         title: String(title).trim(),
         typeId: typeId ? String(typeId) : null,
         budgetAmount: String(budgetNum),
+        spendAmount: '0', // Initial spend is zero, updated as expenses are added
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         allocateByType: Boolean(allocateByType),

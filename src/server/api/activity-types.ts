@@ -9,6 +9,7 @@ import { getDb } from '@/lib/db';
 import { marketingActivityTypes } from '@/lib/feature-pack-schemas';
 import { and, asc, eq, like, or, sql } from 'drizzle-orm';
 import { extractUserFromRequest, isAdmin } from '../auth';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
     const [created] = await db
       .insert(marketingActivityTypes)
       .values({
+        id: randomUUID(),
         key: String(key).trim(),
         name: String(name).trim(),
         category: category || null,

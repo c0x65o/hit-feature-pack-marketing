@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingVendors } from '@/lib/feature-pack-schemas';
 import { and, asc, eq, like, or, sql } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
     const [created] = await db
       .insert(marketingVendors)
       .values({
+        id: randomUUID(),
         name: String(name).trim(),
         kind: String(kind),
         link: link || null,

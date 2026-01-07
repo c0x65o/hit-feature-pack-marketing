@@ -13,6 +13,7 @@ import {
   marketingVendors,
 } from '@/lib/feature-pack-schemas';
 import { and, asc, desc, eq, gte, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -178,6 +179,7 @@ export async function POST(request: NextRequest) {
     const [created] = await db
       .insert(marketingExpenses)
       .values({
+        id: randomUUID(),
         planId: planId || null,
         typeId: typeId ? String(typeId) : null,
         vendorId: vendorId || null,
