@@ -20,7 +20,10 @@ type ExpenseRow = {
 };
 
 function formatUsd(n: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number.isFinite(n) ? n : 0);
+  // Use the user's locale for separators/placement, but keep currency explicit + consistent (USD).
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', currencyDisplay: 'code' }).format(
+    Number.isFinite(n) ? n : 0
+  );
 }
 
 export function ExpensesList() {
@@ -110,7 +113,7 @@ export function ExpensesList() {
       { key: 'plan', label: 'Plan', render: (_v: unknown, row: ExpenseRow) => row.plan?.title || '—' },
       { key: 'vendor', label: 'Vendor', render: (_v: unknown, row: ExpenseRow) => row.vendor?.name || '—' },
       { key: 'type', label: 'Type', render: (_v: unknown, row: ExpenseRow) => row.type?.name || '—' },
-      { key: 'amount', label: 'Amount', sortable: true, render: (_v: unknown, row: ExpenseRow) => <span className="font-mono">{formatUsd(row.amount)}</span> },
+      { key: 'amount', label: 'Amount (USD)', sortable: true, render: (_v: unknown, row: ExpenseRow) => <span className="font-mono">{formatUsd(row.amount)}</span> },
       { key: 'notes', label: 'Notes', render: (_v: unknown, row: ExpenseRow) => row.notes || '—' },
     ],
     []
@@ -201,7 +204,7 @@ export function ExpensesList() {
             <Input type="datetime-local" value={occurredAt} onChange={setOccurredAt} />
           </div>
           <div>
-            <label className="text-sm font-medium">Amount *</label>
+            <label className="text-sm font-medium">Amount (USD) *</label>
             <Input value={amount} onChange={setAmount} />
           </div>
           <div>

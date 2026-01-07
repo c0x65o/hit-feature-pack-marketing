@@ -14,14 +14,38 @@ routes:
   - path: /marketing/plans
     page: PlansList
     roles: []
+  - path: /marketing/plans/new
+    page: PlanEdit
+    roles: []
   - path: /marketing/plans/[id]
     page: PlanDetail
+    roles: []
+  - path: /marketing/plans/[id]/edit
+    page: PlanEdit
     roles: []
   - path: /marketing/expenses
     page: ExpensesList
     roles: []
+  - path: /marketing/expenses/new
+    page: ExpenseEdit
+    roles: []
+  - path: /marketing/expenses/[id]
+    page: ExpenseDetail
+    roles: []
+  - path: /marketing/expenses/[id]/edit
+    page: ExpenseEdit
+    roles: []
   - path: /marketing/vendors
     page: VendorsList
+    roles: []
+  - path: /marketing/vendors/new
+    page: VendorEdit
+    roles: []
+  - path: /marketing/vendors/[id]
+    page: VendorDetail
+    roles: []
+  - path: /marketing/vendors/[id]/edit
+    page: VendorEdit
     roles: []
   - path: /marketing/setup/plan-types
     page: PlanTypesSetup

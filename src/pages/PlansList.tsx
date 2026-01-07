@@ -19,7 +19,11 @@ type Plan = {
 };
 
 function formatUsd(n: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number.isFinite(n) ? n : 0);
+  // Use the user's locale for separators/placement, but keep currency explicit + consistent (USD).
+  // This avoids ambiguity when the user isn't in en-US.
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', currencyDisplay: 'code' }).format(
+    Number.isFinite(n) ? n : 0
+  );
 }
 
 export function PlansList() {
@@ -117,8 +121,8 @@ export function PlansList() {
             '—'
           ),
       },
-      { key: 'budgetAmount', label: 'Budget', sortable: true, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.budgetAmount)}</span> },
-      { key: 'monthSpendAmount', label: 'This month', sortable: false, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.monthSpendAmount)}</span> },
+      { key: 'budgetAmount', label: 'Budget (USD)', sortable: true, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.budgetAmount)}</span> },
+      { key: 'monthSpendAmount', label: 'This month (USD)', sortable: false, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.monthSpendAmount)}</span> },
       {
         key: 'isArchived',
         label: 'Status',
@@ -204,7 +208,7 @@ export function PlansList() {
             <Input value={newTitle} onChange={setNewTitle} placeholder="e.g. Winter campaign" />
           </div>
           <div>
-            <label className="text-sm font-medium">Budget</label>
+            <label className="text-sm font-medium">Budget (USD)</label>
             <Input value={newBudget} onChange={setNewBudget} placeholder="0" />
           </div>
           <div>
