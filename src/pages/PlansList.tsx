@@ -19,19 +19,18 @@ type Plan = {
 };
 
 function formatUsd(n: number): string {
-  // Use the user's locale for separators/placement, but keep currency explicit + consistent (USD).
-  // This avoids ambiguity when the user isn't in en-US.
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', currencyDisplay: 'code' }).format(
-    Number.isFinite(n) ? n : 0
-  );
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number.isFinite(n) ? n : 0);
 }
 
-export function PlansList() {
+interface PlansListProps {
+  onNavigate?: (path: string) => void;
+}
+
+export function PlansList({ onNavigate }: PlansListProps) {
   const router = useRouter();
-  const { Page, Card, Button, Badge, Spinner, Alert, DataTable, Modal, Input } = useUi();
+  const { Page, Card, Button, Badge, DataTable, Alert } = useUi();
 
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [types, setTypes] = useState<PlanType[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,11 +42,13 @@ export function PlansList() {
     sortWhitelist: ['title', 'createdAt', 'updatedAt', 'budgetAmount', 'isArchived'],
   });
 
-  const [showCreate, setShowCreate] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newBudget, setNewBudget] = useState('0');
-  const [newTypeId, setNewTypeId] = useState<string>('');
+  const navigate = useCallback((path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      router.push(path);
+    }
+  }, [onNavigate, router]);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -60,18 +61,11 @@ export function PlansList() {
       if (serverTable.query.sortBy) params.set('sortBy', serverTable.query.sortBy);
       if (serverTable.query.sortOrder) params.set('sortOrder', serverTable.query.sortOrder);
 
-      const [plansRes, typesRes] = await Promise.all([
-        fetch(`/api/marketing/plans?${params.toString()}`),
-        // Keep types list as small/reference data
-        fetch('/api/marketing/plan-types?activeOnly=true&limit=500&offset=0'),
-      ]);
-      if (!plansRes.ok) throw new Error('Failed to fetch plans');
-      if (!typesRes.ok) throw new Error('Failed to fetch plan types');
-      const plansData = await plansRes.json();
-      const typesData = await typesRes.json();
+      const res = await fetch(`/api/marketing/plans?${params.toString()}`);
+      if (!res.ok) throw new Error('Failed to fetch plans');
+      const plansData = await res.json();
       setPlans(plansData.items || []);
       setTotal(Number(plansData.total || 0));
-      setTypes(typesData.items || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load');
     } finally {
@@ -96,16 +90,7 @@ export function PlansList() {
         label: 'Title',
         sortable: true,
         render: (_v: unknown, row: Plan) => (
-          <a
-            href={`/marketing/plans/${row.id}`}
-            className="text-blue-600 hover:underline font-medium"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push(`/marketing/plans/${row.id}`);
-            }}
-          >
-            {row.title}
-          </a>
+          <span className="text-blue-600 font-medium">{row.title}</span>
         ),
       },
       {
@@ -122,7 +107,7 @@ export function PlansList() {
           ),
       },
       { key: 'budgetAmount', label: 'Budget (USD)', sortable: true, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.budgetAmount)}</span> },
-      { key: 'monthSpendAmount', label: 'This month (USD)', sortable: false, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.monthSpendAmount)}</span> },
+      { key: 'monthSpendAmount', label: 'This Month (USD)', sortable: false, render: (_v: unknown, row: Plan) => <span className="font-mono">{formatUsd(row.monthSpendAmount)}</span> },
       {
         key: 'isArchived',
         label: 'Status',
@@ -130,44 +115,15 @@ export function PlansList() {
         render: (_v: unknown, row: Plan) => <Badge variant={row.isArchived ? 'default' : 'success'}>{row.isArchived ? 'Archived' : 'Active'}</Badge>,
       },
     ],
-    [router, Badge]
+    [Badge]
   );
-
-  const createPlan = async () => {
-    try {
-      setCreating(true);
-      setError(null);
-      const res = await fetch('/api/marketing/plans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newTitle,
-          budgetAmount: Number(newBudget || 0),
-          typeId: newTypeId || null,
-        }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || 'Failed to create plan');
-      }
-      setShowCreate(false);
-      setNewTitle('');
-      setNewBudget('0');
-      setNewTypeId('');
-      await fetchAll();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create plan');
-    } finally {
-      setCreating(false);
-    }
-  };
 
   return (
     <Page
       title="Marketing Plans"
       actions={
-        <Button variant="primary" onClick={() => setShowCreate(true)}>
-          <Plus size={16} className="mr-2" /> New plan
+        <Button variant="primary" onClick={() => navigate('/marketing/plans/new')}>
+          <Plus size={16} className="mr-2" /> New Plan
         </Button>
       }
     >
@@ -181,7 +137,7 @@ export function PlansList() {
         {plans.length === 0 && !loading ? (
           <div className="p-10 text-center text-muted-foreground">
             <Calendar size={40} className="mx-auto mb-3 opacity-60" />
-            No plans yet.
+            No plans yet. Create your first marketing plan to get started.
           </div>
         ) : (
           <DataTable
@@ -196,50 +152,12 @@ export function PlansList() {
             onRefresh={fetchAll}
             refreshing={loading}
             searchDebounceMs={400}
-            onRowClick={(row: any) => router.push(`/marketing/plans/${row?.id}`)}
+            onRowClick={(row: Plan) => navigate(`/marketing/plans/${row.id}`)}
           />
         )}
       </Card>
-
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New plan">
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="text-sm font-medium">Title *</label>
-            <Input value={newTitle} onChange={setNewTitle} placeholder="e.g. Winter campaign" />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Budget (USD)</label>
-            <Input value={newBudget} onChange={setNewBudget} placeholder="0" />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Plan type</label>
-            <select
-              value={newTypeId}
-              onChange={(e) => setNewTypeId(e.target.value)}
-              className="w-full border rounded px-2 py-2 bg-background text-sm"
-            >
-              <option value="">—</option>
-              {types.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" onClick={() => setShowCreate(false)} disabled={creating}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={createPlan} disabled={creating || !newTitle.trim()}>
-              {creating ? 'Creating…' : 'Create'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </Page>
   );
 }
 
 export default PlansList;
-
-

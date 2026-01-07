@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUi } from '@hit/ui-kit';
 import { useServerDataTableState } from '@hit/ui-kit';
 import { Plus, Receipt } from 'lucide-react';
@@ -20,14 +21,16 @@ type ExpenseRow = {
 };
 
 function formatUsd(n: number): string {
-  // Use the user's locale for separators/placement, but keep currency explicit + consistent (USD).
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', currencyDisplay: 'code' }).format(
-    Number.isFinite(n) ? n : 0
-  );
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number.isFinite(n) ? n : 0);
 }
 
-export function ExpensesList() {
-  const { Page, Card, Button, Spinner, Alert, DataTable, Modal, Input, TextArea } = useUi();
+interface ExpensesListProps {
+  onNavigate?: (path: string) => void;
+}
+
+export function ExpensesList({ onNavigate }: ExpensesListProps) {
+  const router = useRouter();
+  const { Page, Card, Button, Alert, DataTable } = useUi();
 
   const [items, setItems] = useState<ExpenseRow[]>([]);
   const [totalAmount, setTotalAmount] = useState<number>(0);
@@ -42,18 +45,13 @@ export function ExpensesList() {
     sortWhitelist: ['occurredAt', 'amount', 'createdAt'],
   });
 
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [types, setTypes] = useState<ActivityType[]>([]);
-
-  const [showCreate, setShowCreate] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [occurredAt, setOccurredAt] = useState(() => new Date().toISOString().slice(0, 16));
-  const [amount, setAmount] = useState('0');
-  const [planId, setPlanId] = useState('');
-  const [vendorId, setVendorId] = useState('');
-  const [typeId, setTypeId] = useState('');
-  const [notes, setNotes] = useState('');
+  const navigate = useCallback((path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      router.push(path);
+    }
+  }, [onNavigate, router]);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -67,29 +65,12 @@ export function ExpensesList() {
       if (serverTable.query.sortBy) q.set('sortBy', serverTable.query.sortBy);
       if (serverTable.query.sortOrder) q.set('sortOrder', serverTable.query.sortOrder);
 
-      const [eRes, pRes, vRes, tRes] = await Promise.all([
-        fetch(`/api/marketing/expenses?${q.toString()}`),
-        fetch('/api/marketing/plans?limit=500&offset=0'),
-        fetch('/api/marketing/vendors?activeOnly=true&limit=500&offset=0'),
-        fetch('/api/marketing/activity-types?activeOnly=true&limit=500&offset=0'),
-      ]);
-      if (!eRes.ok) throw new Error('Failed to fetch expenses');
-      const eData = await eRes.json();
+      const res = await fetch(`/api/marketing/expenses?${q.toString()}`);
+      if (!res.ok) throw new Error('Failed to fetch expenses');
+      const eData = await res.json();
       setItems(eData.items || []);
       setTotalAmount(Number(eData?.totals?.totalAmount || 0));
       setTotal(Number(eData?.total || 0));
-      if (pRes.ok) {
-        const pData = await pRes.json();
-        setPlans((pData.items || []).map((p: any) => ({ id: String(p.id), title: String(p.title) })));
-      }
-      if (vRes.ok) {
-        const vData = await vRes.json();
-        setVendors(vData.items || []);
-      }
-      if (tRes.ok) {
-        const tData = await tRes.json();
-        setTypes(tData.items || []);
-      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load');
     } finally {
@@ -119,47 +100,12 @@ export function ExpensesList() {
     []
   );
 
-  const createExpense = async () => {
-    try {
-      setCreating(true);
-      setError(null);
-      const res = await fetch('/api/marketing/expenses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          occurredAt,
-          amount: Number(amount || 0),
-          planId: planId || null,
-          vendorId: vendorId || null,
-          typeId: typeId || null,
-          notes: notes || null,
-        }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || 'Failed to create expense');
-      }
-      setShowCreate(false);
-      setAmount('0');
-      setPlanId('');
-      setVendorId('');
-      setTypeId('');
-      setNotes('');
-      setOccurredAt(new Date().toISOString().slice(0, 16));
-      await fetchAll();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create expense');
-    } finally {
-      setCreating(false);
-    }
-  };
-
   return (
     <Page
       title="Marketing Expenses"
       actions={
-        <Button variant="primary" onClick={() => setShowCreate(true)}>
-          <Plus size={16} className="mr-2" /> New expense
+        <Button variant="primary" onClick={() => navigate('/marketing/expenses/new')}>
+          <Plus size={16} className="mr-2" /> New Expense
         </Button>
       }
     >
@@ -177,7 +123,7 @@ export function ExpensesList() {
         {items.length === 0 && !loading ? (
           <div className="p-10 text-center text-muted-foreground">
             <Receipt size={40} className="mx-auto mb-3 opacity-60" />
-            No expenses yet.
+            No expenses yet. Track your marketing spend by adding expenses.
           </div>
         ) : (
           <DataTable
@@ -192,72 +138,12 @@ export function ExpensesList() {
             onRefresh={fetchAll}
             refreshing={loading}
             searchDebounceMs={400}
-            onRowClick={() => {}}
+            onRowClick={(row: ExpenseRow) => navigate(`/marketing/expenses/${row.id}`)}
           />
         )}
       </Card>
-
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="New expense">
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="text-sm font-medium">When *</label>
-            <Input type="datetime-local" value={occurredAt} onChange={setOccurredAt} />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Amount (USD) *</label>
-            <Input value={amount} onChange={setAmount} />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Plan</label>
-            <select value={planId} onChange={(e) => setPlanId(e.target.value)} className="w-full border rounded px-2 py-2 bg-background text-sm">
-              <option value="">—</option>
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Vendor</label>
-            <select value={vendorId} onChange={(e) => setVendorId(e.target.value)} className="w-full border rounded px-2 py-2 bg-background text-sm">
-              <option value="">—</option>
-              {vendors.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Activity type</label>
-            <select value={typeId} onChange={(e) => setTypeId(e.target.value)} className="w-full border rounded px-2 py-2 bg-background text-sm">
-              <option value="">—</option>
-              {types.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium">Notes</label>
-            <TextArea value={notes} onChange={setNotes} rows={3} placeholder="Optional" />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" onClick={() => setShowCreate(false)} disabled={creating}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={createExpense} disabled={creating || !occurredAt || Number(amount) <= 0}>
-              {creating ? 'Creating…' : 'Create'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </Page>
   );
 }
 
 export default ExpensesList;
-
-
