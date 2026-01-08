@@ -1,0 +1,80 @@
+/**
+ * Marketing Vendors API
+ *
+ * GET  - List vendors
+ * POST - Create vendor
+ */
+import { NextResponse } from 'next/server';
+import { getDb } from '@/lib/db';
+import { marketingVendors } from '@/lib/feature-pack-schemas';
+import { and, asc, eq, like, or, sql } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export async function GET(request) {
+    try {
+        const db = getDb();
+        const { searchParams } = new URL(request.url);
+        const activeOnly = searchParams.get('activeOnly') !== 'false';
+        const kind = searchParams.get('kind');
+        const search = searchParams.get('search');
+        const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
+        const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
+        const conditions = [];
+        if (activeOnly)
+            conditions.push(eq(marketingVendors.isActive, true));
+        if (kind)
+            conditions.push(eq(marketingVendors.kind, kind));
+        if (search) {
+            conditions.push(or(like(marketingVendors.name, `%${search}%`), like(marketingVendors.contact, `%${search}%`)));
+        }
+        let query = db.select().from(marketingVendors).orderBy(asc(marketingVendors.name));
+        if (conditions.length > 0)
+            query = query.where(and(...conditions));
+        // Total count (for pagination UI)
+        const countQuery = db.select({ count: sql `count(*)` }).from(marketingVendors);
+        const [countResult] = conditions.length > 0 ? await countQuery.where(and(...conditions)) : await countQuery;
+        const total = Number(countResult?.count || 0);
+        const items = await query.limit(limit).offset(offset);
+        return NextResponse.json({ items, total, limit, offset });
+    }
+    catch (error) {
+        console.error('Error fetching vendors:', error);
+        return NextResponse.json({ error: 'Failed to fetch vendors' }, { status: 500 });
+    }
+}
+export async function POST(request) {
+    try {
+        const db = getDb();
+        const body = await request.json();
+        const { name, kind, link, contact, notes, isActive = true } = body || {};
+        if (!name?.trim())
+            return NextResponse.json({ error: 'name is required' }, { status: 400 });
+        if (!kind?.trim())
+            return NextResponse.json({ error: 'kind is required' }, { status: 400 });
+        const validKinds = ['Platform', 'Agency', 'Creator', 'Other'];
+        if (!validKinds.includes(String(kind))) {
+            return NextResponse.json({ error: `kind must be one of: ${validKinds.join(', ')}` }, { status: 400 });
+        }
+        const now = new Date();
+        const [created] = await db
+            .insert(marketingVendors)
+            .values({
+            id: randomUUID(),
+            name: String(name).trim(),
+            kind: String(kind),
+            link: link || null,
+            contact: contact || null,
+            notes: notes || null,
+            isActive: Boolean(isActive),
+            createdAt: now,
+            updatedAt: now,
+        })
+            .returning();
+        return NextResponse.json(created, { status: 201 });
+    }
+    catch (error) {
+        console.error('Error creating vendor:', error);
+        return NextResponse.json({ error: 'Failed to create vendor' }, { status: 500 });
+    }
+}
