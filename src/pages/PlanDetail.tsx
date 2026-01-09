@@ -2,7 +2,9 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useUi, useAlertDialog, type BreadcrumbItem } from '@hit/ui-kit';
+import type { BreadcrumbItem } from '@hit/ui-kit';
+import { useUi } from '@hit/ui-kit';
+import { useAlertDialog } from '@hit/ui-kit/hooks/useAlertDialog';
 import { DollarSign, Plus, Trash2, Pencil, Package, ClipboardList } from 'lucide-react';
 
 type Vendor = { id: string; name: string; kind: string };

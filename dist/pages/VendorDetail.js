@@ -2,7 +2,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useUi, useAlertDialog } from '@hit/ui-kit';
+import { useUi } from '@hit/ui-kit';
+import { useAlertDialog } from '@hit/ui-kit/hooks/useAlertDialog';
 import { Trash2, Pencil, Package, Store, ExternalLink } from 'lucide-react';
 export function VendorDetail({ id, onNavigate }) {
     const router = useRouter();

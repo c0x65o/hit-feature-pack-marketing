@@ -2,7 +2,8 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useUi, useAlertDialog } from '@hit/ui-kit';
+import { useUi } from '@hit/ui-kit';
+import { useAlertDialog } from '@hit/ui-kit/hooks/useAlertDialog';
 import { DollarSign, Plus, Trash2, Pencil, Package, ClipboardList } from 'lucide-react';
 function formatUsd(n) {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number.isFinite(n) ? n : 0);

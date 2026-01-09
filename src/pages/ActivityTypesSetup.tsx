@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useUi, ColorPicker } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit';
+import { useUi } from '@hit/ui-kit';
+import { ColorPicker } from '@hit/ui-kit/components/ColorPicker';
+import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
 import { List, Plus } from 'lucide-react';
 
 type ActivityType = {

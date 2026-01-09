@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUi } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit';
+import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
 import { Building2, Plus } from 'lucide-react';
 export function VendorsList({ onNavigate }) {
     const router = useRouter();

@@ -2,7 +2,9 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useUi, useAlertDialog, type BreadcrumbItem } from '@hit/ui-kit';
+import type { BreadcrumbItem } from '@hit/ui-kit';
+import { useUi } from '@hit/ui-kit';
+import { useAlertDialog } from '@hit/ui-kit/hooks/useAlertDialog';
 import { Trash2, Pencil, Package, Receipt } from 'lucide-react';
 
 type ExpenseData = {

@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUi } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit';
+import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
 import { Plus, Receipt } from 'lucide-react';
 
 type Plan = { id: string; title: string };

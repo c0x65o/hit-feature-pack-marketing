@@ -1,8 +1,9 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useUi, ColorPicker } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit';
+import { useUi } from '@hit/ui-kit';
+import { ColorPicker } from '@hit/ui-kit/components/ColorPicker';
+import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
 import { Plus, Tag } from 'lucide-react';
 export function PlanTypesSetup() {
     const { Page, Card, Badge, Spinner, Alert, DataTable, Button, Modal, Input, TextArea } = useUi();
