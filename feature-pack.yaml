@@ -11,48 +11,63 @@ routes:
   - path: /marketing
     page: Dashboard
     roles: []
+    authz: { entity: marketing, verb: read }
   - path: /marketing/plans
     page: PlansList
     roles: []
+    authz: { entity: plans, verb: read }
   - path: /marketing/plans/new
     page: PlanEdit
     roles: []
+    authz: { entity: plans, verb: write, require_create: true }
   - path: /marketing/plans/[id]
     page: PlanDetail
     roles: []
+    authz: { entity: plans, verb: read }
   - path: /marketing/plans/[id]/edit
     page: PlanEdit
     roles: []
+    authz: { entity: plans, verb: write }
   - path: /marketing/expenses
     page: ExpensesList
     roles: []
+    authz: { entity: expenses, verb: read }
   - path: /marketing/expenses/new
     page: ExpenseEdit
     roles: []
+    authz: { entity: expenses, verb: write, require_create: true }
   - path: /marketing/expenses/[id]
     page: ExpenseDetail
     roles: []
+    authz: { entity: expenses, verb: read }
   - path: /marketing/expenses/[id]/edit
     page: ExpenseEdit
     roles: []
+    authz: { entity: expenses, verb: write }
   - path: /marketing/vendors
     page: VendorsList
     roles: []
+    authz: { entity: vendors, verb: read }
   - path: /marketing/vendors/new
     page: VendorEdit
     roles: []
+    authz: { entity: vendors, verb: write, require_create: true }
   - path: /marketing/vendors/[id]
     page: VendorDetail
     roles: []
+    authz: { entity: vendors, verb: read }
   - path: /marketing/vendors/[id]/edit
     page: VendorEdit
     roles: []
+    authz: { entity: vendors, verb: write }
   - path: /marketing/setup/plan-types
     page: PlanTypesSetup
     roles: [admin]
+    default_roles_allow: [admin]
   - path: /marketing/setup/activity-types
     page: ActivityTypesSetup
     roles: [admin]
+    default_roles_allow: [admin]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # NAVIGATION - Sidebar/topbar items
@@ -198,6 +213,242 @@ api:
       methods: [GET, POST, DELETE]
       handler: "@hit/feature-pack-marketing/server/api/links"
       description: "Optional entity linking (gated behind enable_project_linking)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PERMISSIONS - Entity+Verb permissions model
+# ─────────────────────────────────────────────────────────────────────────────
+permissions:
+  actions:
+    # Scope Policy Tree: Marketing (global) -> entity overrides.
+    #
+    # Scope modes:
+    # - none: deny all access for this verb/entity (hide pages + block APIs)
+    # - any: ignore scope (read everything)
+    # - own: only owned records (based on createdBy for expenses, or plan's createdBy for plans)
+    # - ldd: same as any (marketing entities don't have LDD fields)
+    #
+    # These are mutually exclusive per node; the Security Groups UI renders them as dropdowns.
+    - key: marketing.read.scope.none
+      label: "Marketing Read Scope = None"
+      description: "Deny all marketing read access."
+      default_enabled: false
+    - key: marketing.read.scope.any
+      label: "Marketing Read Scope = Any"
+      description: "Read all marketing entities regardless of ownership."
+      default_enabled: false
+    - key: marketing.read.scope.own
+      label: "Marketing Read Scope = Own"
+      description: "Read only marketing entities you created."
+      default_enabled: false
+    - key: marketing.read.scope.ldd
+      label: "Marketing Read Scope = LDD"
+      description: "Read marketing entities (same as any, since marketing has no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.write.scope.none
+      label: "Marketing Write Scope = None"
+      description: "Deny all marketing write access."
+      default_enabled: false
+    - key: marketing.write.scope.any
+      label: "Marketing Write Scope = Any"
+      description: "Edit marketing entities regardless of ownership."
+      default_enabled: false
+    - key: marketing.write.scope.own
+      label: "Marketing Write Scope = Own"
+      description: "Edit only marketing entities you created."
+      default_enabled: false
+    - key: marketing.write.scope.ldd
+      label: "Marketing Write Scope = LDD"
+      description: "Edit marketing entities (same as any, since marketing has no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.delete.scope.none
+      label: "Marketing Delete Scope = None"
+      description: "Deny all marketing delete access."
+      default_enabled: false
+    - key: marketing.delete.scope.any
+      label: "Marketing Delete Scope = Any"
+      description: "Delete marketing entities regardless of ownership."
+      default_enabled: false
+    - key: marketing.delete.scope.own
+      label: "Marketing Delete Scope = Own"
+      description: "Delete only marketing entities you created."
+      default_enabled: false
+    - key: marketing.delete.scope.ldd
+      label: "Marketing Delete Scope = LDD"
+      description: "Delete marketing entities (same as any, since marketing has no LDD fields)."
+      default_enabled: false
+
+    # Plans override
+    - key: marketing.plans.read.scope.none
+      label: "Marketing Plans Read Scope = None"
+      description: "Deny all plan read access."
+      default_enabled: false
+    - key: marketing.plans.read.scope.any
+      label: "Marketing Plans Read Scope = Any"
+      description: "Read plans regardless of ownership."
+      default_enabled: false
+    - key: marketing.plans.read.scope.own
+      label: "Marketing Plans Read Scope = Own"
+      description: "Read only plans you created."
+      default_enabled: false
+    - key: marketing.plans.read.scope.ldd
+      label: "Marketing Plans Read Scope = LDD"
+      description: "Read plans (same as any, since plans have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.plans.write.scope.none
+      label: "Marketing Plans Write Scope = None"
+      description: "Deny all plan write access."
+      default_enabled: false
+    - key: marketing.plans.write.scope.any
+      label: "Marketing Plans Write Scope = Any"
+      description: "Edit plans regardless of ownership."
+      default_enabled: false
+    - key: marketing.plans.write.scope.own
+      label: "Marketing Plans Write Scope = Own"
+      description: "Edit only plans you created."
+      default_enabled: false
+    - key: marketing.plans.write.scope.ldd
+      label: "Marketing Plans Write Scope = LDD"
+      description: "Edit plans (same as any, since plans have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.plans.delete.scope.none
+      label: "Marketing Plans Delete Scope = None"
+      description: "Deny all plan delete access."
+      default_enabled: false
+    - key: marketing.plans.delete.scope.any
+      label: "Marketing Plans Delete Scope = Any"
+      description: "Delete plans regardless of ownership."
+      default_enabled: false
+    - key: marketing.plans.delete.scope.own
+      label: "Marketing Plans Delete Scope = Own"
+      description: "Delete only plans you created."
+      default_enabled: false
+    - key: marketing.plans.delete.scope.ldd
+      label: "Marketing Plans Delete Scope = LDD"
+      description: "Delete plans (same as any, since plans have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.plans.create
+      label: Create Plan
+      description: "Create a new marketing plan."
+      default_enabled: true
+
+    # Expenses override
+    - key: marketing.expenses.read.scope.none
+      label: "Marketing Expenses Read Scope = None"
+      description: "Deny all expense read access."
+      default_enabled: false
+    - key: marketing.expenses.read.scope.any
+      label: "Marketing Expenses Read Scope = Any"
+      description: "Read expenses regardless of ownership."
+      default_enabled: false
+    - key: marketing.expenses.read.scope.own
+      label: "Marketing Expenses Read Scope = Own"
+      description: "Read only expenses you created."
+      default_enabled: false
+    - key: marketing.expenses.read.scope.ldd
+      label: "Marketing Expenses Read Scope = LDD"
+      description: "Read expenses (same as any, since expenses have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.expenses.write.scope.none
+      label: "Marketing Expenses Write Scope = None"
+      description: "Deny all expense write access."
+      default_enabled: false
+    - key: marketing.expenses.write.scope.any
+      label: "Marketing Expenses Write Scope = Any"
+      description: "Edit expenses regardless of ownership."
+      default_enabled: false
+    - key: marketing.expenses.write.scope.own
+      label: "Marketing Expenses Write Scope = Own"
+      description: "Edit only expenses you created."
+      default_enabled: false
+    - key: marketing.expenses.write.scope.ldd
+      label: "Marketing Expenses Write Scope = LDD"
+      description: "Edit expenses (same as any, since expenses have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.expenses.delete.scope.none
+      label: "Marketing Expenses Delete Scope = None"
+      description: "Deny all expense delete access."
+      default_enabled: false
+    - key: marketing.expenses.delete.scope.any
+      label: "Marketing Expenses Delete Scope = Any"
+      description: "Delete expenses regardless of ownership."
+      default_enabled: false
+    - key: marketing.expenses.delete.scope.own
+      label: "Marketing Expenses Delete Scope = Own"
+      description: "Delete only expenses you created."
+      default_enabled: false
+    - key: marketing.expenses.delete.scope.ldd
+      label: "Marketing Expenses Delete Scope = LDD"
+      description: "Delete expenses (same as any, since expenses have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.expenses.create
+      label: Create Expense
+      description: "Create a new marketing expense."
+      default_enabled: true
+
+    # Vendors override
+    - key: marketing.vendors.read.scope.none
+      label: "Marketing Vendors Read Scope = None"
+      description: "Deny all vendor read access."
+      default_enabled: false
+    - key: marketing.vendors.read.scope.any
+      label: "Marketing Vendors Read Scope = Any"
+      description: "Read vendors regardless of ownership."
+      default_enabled: false
+    - key: marketing.vendors.read.scope.own
+      label: "Marketing Vendors Read Scope = Own"
+      description: "Read only vendors you created."
+      default_enabled: false
+    - key: marketing.vendors.read.scope.ldd
+      label: "Marketing Vendors Read Scope = LDD"
+      description: "Read vendors (same as any, since vendors have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.vendors.write.scope.none
+      label: "Marketing Vendors Write Scope = None"
+      description: "Deny all vendor write access."
+      default_enabled: false
+    - key: marketing.vendors.write.scope.any
+      label: "Marketing Vendors Write Scope = Any"
+      description: "Edit vendors regardless of ownership."
+      default_enabled: false
+    - key: marketing.vendors.write.scope.own
+      label: "Marketing Vendors Write Scope = Own"
+      description: "Edit only vendors you created."
+      default_enabled: false
+    - key: marketing.vendors.write.scope.ldd
+      label: "Marketing Vendors Write Scope = LDD"
+      description: "Edit vendors (same as any, since vendors have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.vendors.delete.scope.none
+      label: "Marketing Vendors Delete Scope = None"
+      description: "Deny all vendor delete access."
+      default_enabled: false
+    - key: marketing.vendors.delete.scope.any
+      label: "Marketing Vendors Delete Scope = Any"
+      description: "Delete vendors regardless of ownership."
+      default_enabled: false
+    - key: marketing.vendors.delete.scope.own
+      label: "Marketing Vendors Delete Scope = Own"
+      description: "Delete only vendors you created."
+      default_enabled: false
+    - key: marketing.vendors.delete.scope.ldd
+      label: "Marketing Vendors Delete Scope = LDD"
+      description: "Delete vendors (same as any, since vendors have no LDD fields)."
+      default_enabled: false
+
+    - key: marketing.vendors.create
+      label: Create Vendor
+      description: "Create a new marketing vendor."
+      default_enabled: true
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DEPENDENCIES

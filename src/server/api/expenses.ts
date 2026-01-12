@@ -15,6 +15,9 @@ import {
 import { and, asc, desc, eq, gte, isNull, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getProjectLinkingPolicy, isUuid, setLinkedProjectId } from '../lib/project-linking';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { requireMarketingAction } from '../lib/require-action';
+import { extractUserFromRequest } from '../auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -23,6 +26,15 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     const { searchParams } = new URL(request.url);
+    const user = extractUserFromRequest(request);
+
+    // Check read permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'expenses', verb: 'read' });
+
+    if (mode === 'none') {
+      // Explicit deny: return empty results
+      return NextResponse.json({ items: [], total: 0, limit: 0, offset: 0 });
+    }
 
     const planId = searchParams.get('planId');
     const typeId = searchParams.get('typeId');
@@ -54,6 +66,18 @@ export async function GET(request: NextRequest) {
     if (vendorId) conditions.push(eq(marketingExpenses.vendorId, vendorId as any));
     if (fromDate) conditions.push(gte(marketingExpenses.occurredAt, new Date(fromDate)));
     if (toDate) conditions.push(lte(marketingExpenses.occurredAt, new Date(toDate)));
+
+    // Scope mode filtering
+    if (mode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (ownerKey) {
+        conditions.push(eq(marketingExpenses.createdBy, ownerKey));
+      } else {
+        // No user, deny access
+        return NextResponse.json({ items: [], total: 0, limit: 0, offset: 0 });
+      }
+    }
+    // 'any' and 'ldd' modes allow all (no filtering needed)
 
     // Search across notes + joined plan/vendor/type names
     if (search) {
@@ -147,8 +171,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check create permission
+    const createCheck = await requireMarketingAction(request, 'marketing.expenses.create');
+    if (createCheck) return createCheck;
+
+    // Check write permission
+    const mode = await resolveMarketingScopeMode(request, { entity: 'expenses', verb: 'write' });
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
     const db = getDb();
     const body = await request.json();
+    const user = extractUserFromRequest(request);
 
     const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
 
@@ -200,6 +235,7 @@ export async function POST(request: NextRequest) {
         amount: String(amountNum),
         notes: notes || null,
         attachmentUrl: attachmentUrl || null,
+        createdBy: user?.sub || null,
         createdAt: now,
         updatedAt: now,
       })

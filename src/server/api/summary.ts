@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingPlans, marketingExpenses } from '@/lib/feature-pack-schemas';
 import { and, desc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { extractUserFromRequest } from '../auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,6 +37,21 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     const { searchParams } = new URL(request.url);
+    const user = extractUserFromRequest(request);
+
+    // Check read permission for marketing (dashboard reads both plans and expenses)
+    const plansMode = await resolveMarketingScopeMode(request, { entity: 'plans', verb: 'read' });
+    const expensesMode = await resolveMarketingScopeMode(request, { entity: 'expenses', verb: 'read' });
+
+    // If both are denied, return empty summary
+    if (plansMode === 'none' && expensesMode === 'none') {
+      return NextResponse.json({
+        month: '',
+        range: { start: '', end: '' },
+        totals: { plannedBudget: 0, actualSpend: 0, remaining: 0, variance: 0 },
+        byPlan: [],
+      });
+    }
 
     const monthParam = parseMonth(searchParams.get('month'));
     const now = new Date();
@@ -44,13 +61,33 @@ export async function GET(request: NextRequest) {
     const start = startOfMonthUtc(year, month);
     const end = startOfNextMonthUtc(year, month);
 
-    const overlapCondition = and(
+    // Build plan conditions with scope filtering
+    const planConditions: any[] = [
       eq(marketingPlans.isArchived, false),
-      // startDate is null OR startDate < end
       or(isNull(marketingPlans.startDate), lte(marketingPlans.startDate, end))!,
-      // endDate is null OR endDate >= start
-      or(isNull(marketingPlans.endDate), gte(marketingPlans.endDate, start))!
-    );
+      or(isNull(marketingPlans.endDate), gte(marketingPlans.endDate, start))!,
+    ];
+    // Plans don't have ownership, so 'own' mode excludes all plans
+    if (plansMode === 'own') {
+      // Return empty summary for plans
+      planConditions.push(sql<boolean>`false`);
+    }
+
+    // Build expense conditions with scope filtering
+    const expenseConditions: any[] = [
+      gte(marketingExpenses.occurredAt, start),
+      lte(marketingExpenses.occurredAt, end),
+    ];
+    if (expensesMode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (ownerKey) {
+        expenseConditions.push(eq(marketingExpenses.createdBy, ownerKey));
+      } else {
+        expenseConditions.push(sql<boolean>`false`);
+      }
+    }
+
+    const overlapCondition = and(...planConditions);
 
     const [plannedRow] = await db
       .select({
@@ -64,12 +101,25 @@ export async function GET(request: NextRequest) {
         actual: sql<number>`coalesce(sum(${marketingExpenses.amount}), 0)`,
       })
       .from(marketingExpenses)
-      .where(and(gte(marketingExpenses.occurredAt, start), lte(marketingExpenses.occurredAt, end)));
+      .where(and(...expenseConditions));
 
     const planned = Number(plannedRow?.planned || 0);
     const actual = Number(actualRow?.actual || 0);
 
     // Spend by plan for the month (includes "Unassigned")
+    // Apply expense scope filtering to the join condition
+    const expenseJoinConditions: any[] = [
+      eq(marketingExpenses.planId, marketingPlans.id),
+      gte(marketingExpenses.occurredAt, start),
+      lte(marketingExpenses.occurredAt, end),
+    ];
+    if (expensesMode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (ownerKey) {
+        expenseJoinConditions.push(eq(marketingExpenses.createdBy, ownerKey));
+      }
+    }
+
     const byPlanRows = await db
       .select({
         planId: marketingPlans.id,
@@ -78,30 +128,30 @@ export async function GET(request: NextRequest) {
         spendAmount: sql<number>`coalesce(sum(${marketingExpenses.amount}), 0)`,
       })
       .from(marketingPlans)
-      .leftJoin(
-        marketingExpenses,
-        and(
-          eq(marketingExpenses.planId, marketingPlans.id),
-          gte(marketingExpenses.occurredAt, start),
-          lte(marketingExpenses.occurredAt, end)
-        )
-      )
-      .where(eq(marketingPlans.isArchived, false))
+      .leftJoin(marketingExpenses, and(...expenseJoinConditions))
+      .where(overlapCondition)
       .groupBy(marketingPlans.id, marketingPlans.title, marketingPlans.budgetAmount)
       .orderBy(desc(sql`coalesce(sum(${marketingExpenses.amount}), 0)`));
+
+    // Unassigned expenses (no planId) - apply expense scope filtering
+    const unassignedConditions: any[] = [
+      isNull(marketingExpenses.planId),
+      gte(marketingExpenses.occurredAt, start),
+      lte(marketingExpenses.occurredAt, end),
+    ];
+    if (expensesMode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (ownerKey) {
+        unassignedConditions.push(eq(marketingExpenses.createdBy, ownerKey));
+      }
+    }
 
     const [unassignedRow] = await db
       .select({
         spendAmount: sql<number>`coalesce(sum(${marketingExpenses.amount}), 0)`,
       })
       .from(marketingExpenses)
-      .where(
-        and(
-          isNull(marketingExpenses.planId),
-          gte(marketingExpenses.occurredAt, start),
-          lte(marketingExpenses.occurredAt, end)
-        )
-      );
+      .where(and(...unassignedConditions));
 
     const byPlan = [
       ...byPlanRows.map((r: any) => ({

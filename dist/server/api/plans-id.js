@@ -10,6 +10,8 @@ import { getDb } from '@/lib/db';
 import { marketingPlans, marketingPlanTypes, marketingExpenses, marketingActivityTypes, marketingVendors, marketingEntityLinks, } from '@/lib/feature-pack-schemas';
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { getProjectLinkingPolicy, getLinkedProjectId, isUuid, setLinkedProjectId } from '../lib/project-linking';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { extractUserFromRequest } from '../auth';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export async function GET(request, { params }) {
@@ -19,6 +21,12 @@ export async function GET(request, { params }) {
         const { searchParams } = new URL(request.url);
         const fromDate = searchParams.get('fromDate');
         const toDate = searchParams.get('toDate');
+        const user = extractUserFromRequest(request);
+        // Check read permission and resolve scope mode
+        const mode = await resolveMarketingScopeMode(request, { entity: 'plans', verb: 'read' });
+        if (mode === 'none') {
+            return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+        }
         const [row] = await db
             .select({
             plan: marketingPlans,
@@ -34,6 +42,11 @@ export async function GET(request, { params }) {
             .limit(1);
         if (!row)
             return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+        // Scope mode check: 'own' mode denies access since plans have no ownership field
+        if (mode === 'own') {
+            return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+        }
+        // 'any' and 'ldd' modes allow access
         const conditions = [eq(marketingExpenses.planId, id)];
         if (fromDate)
             conditions.push(gte(marketingExpenses.occurredAt, new Date(fromDate)));
@@ -92,6 +105,12 @@ export async function PUT(request, { params }) {
         const db = getDb();
         const { id } = await params;
         const body = await request.json();
+        const user = extractUserFromRequest(request);
+        // Check write permission and resolve scope mode
+        const mode = await resolveMarketingScopeMode(request, { entity: 'plans', verb: 'write' });
+        if (mode === 'none') {
+            return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+        }
         const [existing] = await db
             .select({ id: marketingPlans.id })
             .from(marketingPlans)
@@ -99,6 +118,11 @@ export async function PUT(request, { params }) {
             .limit(1);
         if (!existing)
             return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+        // Scope mode check: 'own' mode denies access since plans have no ownership field
+        if (mode === 'own') {
+            return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+        }
+        // 'any' and 'ldd' modes allow access
         const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
         // Optional project link update
         const projectIdStr = body.projectId !== undefined && body.projectId !== null ? String(body.projectId).trim() : '';
@@ -148,6 +172,12 @@ export async function DELETE(request, { params }) {
         const { id } = await params;
         const { searchParams } = new URL(request.url);
         const hard = searchParams.get('hard') === 'true';
+        const user = extractUserFromRequest(request);
+        // Check delete permission and resolve scope mode
+        const mode = await resolveMarketingScopeMode(request, { entity: 'plans', verb: 'delete' });
+        if (mode === 'none') {
+            return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+        }
         const [existing] = await db
             .select({ id: marketingPlans.id })
             .from(marketingPlans)
@@ -155,6 +185,11 @@ export async function DELETE(request, { params }) {
             .limit(1);
         if (!existing)
             return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+        // Scope mode check: 'own' mode denies access since plans have no ownership field
+        if (mode === 'own') {
+            return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+        }
+        // 'any' and 'ldd' modes allow access
         if (hard) {
             await db.delete(marketingPlans).where(eq(marketingPlans.id, id));
             // Clean up links (no FK cascade)

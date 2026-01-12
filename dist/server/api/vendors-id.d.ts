@@ -13,9 +13,9 @@ type RouteParams = {
         id: string;
     }>;
 };
-export declare function GET(_request: NextRequest, { params }: RouteParams): Promise<NextResponse<any>>;
+export declare function GET(request: NextRequest, { params }: RouteParams): Promise<NextResponse<any>>;
 export declare function PUT(request: NextRequest, { params }: RouteParams): Promise<NextResponse<any>>;
-export declare function DELETE(_request: NextRequest, { params }: RouteParams): Promise<NextResponse<{
+export declare function DELETE(request: NextRequest, { params }: RouteParams): Promise<NextResponse<{
     error: string;
 }> | NextResponse<{
     success: boolean;

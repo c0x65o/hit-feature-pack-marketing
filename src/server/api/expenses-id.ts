@@ -16,6 +16,8 @@ import {
 } from '@/lib/feature-pack-schemas';
 import { and, eq } from 'drizzle-orm';
 import { getProjectLinkingPolicy, getLinkedProjectId, isUuid, setLinkedProjectId } from '../lib/project-linking';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { extractUserFromRequest } from '../auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,6 +28,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const db = getDb();
     const { id } = await params;
+    const user = extractUserFromRequest(request);
+
+    // Check read permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'expenses', verb: 'read' });
+
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+    }
 
     const [row] = await db
       .select({
@@ -54,6 +64,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     if (!row) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
 
+    // Scope mode check: 'own' mode requires ownership
+    if (mode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (!ownerKey || row.expense.createdBy !== ownerKey) {
+        return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+      }
+    }
+    // 'any' and 'ldd' modes allow access
+
     const { enabled: linkingEnabled } = getProjectLinkingPolicy(request);
     const projectId = linkingEnabled ? await getLinkedProjectId(db, 'expense', id) : null;
 
@@ -76,9 +95,30 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const db = getDb();
     const { id } = await params;
     const body = await request.json();
+    const user = extractUserFromRequest(request);
 
-    const [existing] = await db.select({ id: marketingExpenses.id }).from(marketingExpenses).where(eq(marketingExpenses.id, id as any)).limit(1);
+    // Check write permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'expenses', verb: 'write' });
+
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    const [existing] = await db
+      .select({ id: marketingExpenses.id, createdBy: marketingExpenses.createdBy })
+      .from(marketingExpenses)
+      .where(eq(marketingExpenses.id, id as any))
+      .limit(1);
     if (!existing) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+
+    // Scope mode check: 'own' mode requires ownership
+    if (mode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (!ownerKey || existing.createdBy !== ownerKey) {
+        return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      }
+    }
+    // 'any' and 'ldd' modes allow access
 
     const { enabled: linkingEnabled, required: linkingRequired } = getProjectLinkingPolicy(request);
 
@@ -166,9 +206,30 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const db = getDb();
     const { id } = await params;
+    const user = extractUserFromRequest(request);
 
-    const [existing] = await db.select({ id: marketingExpenses.id }).from(marketingExpenses).where(eq(marketingExpenses.id, id as any)).limit(1);
+    // Check delete permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'expenses', verb: 'delete' });
+
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
+    const [existing] = await db
+      .select({ id: marketingExpenses.id, createdBy: marketingExpenses.createdBy })
+      .from(marketingExpenses)
+      .where(eq(marketingExpenses.id, id as any))
+      .limit(1);
     if (!existing) return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+
+    // Scope mode check: 'own' mode requires ownership
+    if (mode === 'own') {
+      const ownerKey = user?.sub || '';
+      if (!ownerKey || existing.createdBy !== ownerKey) {
+        return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      }
+    }
+    // 'any' and 'ldd' modes allow access
 
     await db.delete(marketingExpenses).where(eq(marketingExpenses.id, id as any));
 

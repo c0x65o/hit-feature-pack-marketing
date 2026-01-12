@@ -9,6 +9,9 @@ import { getDb } from '@/lib/db';
 import { marketingVendors } from '@/lib/feature-pack-schemas';
 import { and, asc, eq, like, or, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { requireMarketingAction } from '../lib/require-action';
+import { extractUserFromRequest } from '../auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,6 +20,16 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     const { searchParams } = new URL(request.url);
+    const user = extractUserFromRequest(request);
+
+    // Check read permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'vendors', verb: 'read' });
+
+    if (mode === 'none') {
+      // Explicit deny: return empty results
+      return NextResponse.json({ items: [], total: 0, limit: 0, offset: 0 });
+    }
+
     const activeOnly = searchParams.get('activeOnly') !== 'false';
     const kind = searchParams.get('kind');
     const search = searchParams.get('search');
@@ -29,6 +42,14 @@ export async function GET(request: NextRequest) {
     if (search) {
       conditions.push(or(like(marketingVendors.name, `%${search}%`), like(marketingVendors.contact, `%${search}%`))!);
     }
+
+    // Scope mode filtering
+    // Note: Vendors don't have createdBy/ownerUserId, so 'own' mode returns empty results
+    if (mode === 'own') {
+      // No ownership field, so deny access
+      return NextResponse.json({ items: [], total: 0, limit: 0, offset: 0 });
+    }
+    // 'any' and 'ldd' modes allow all (no filtering needed)
 
     let query = db.select().from(marketingVendors).orderBy(asc(marketingVendors.name));
     if (conditions.length > 0) query = query.where(and(...conditions)) as typeof query;
@@ -48,6 +69,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check create permission
+    const createCheck = await requireMarketingAction(request, 'marketing.vendors.create');
+    if (createCheck) return createCheck;
+
+    // Check write permission
+    const mode = await resolveMarketingScopeMode(request, { entity: 'vendors', verb: 'write' });
+    // Vendors currently have no ownership field; treat 'own' as a hard deny to avoid
+    // creating records that the user can never read/update in 'own' mode.
+    if (mode === 'none' || mode === 'own') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
     const db = getDb();
     const body = await request.json();
     const { name, kind, link, contact, notes, isActive = true } = body || {};

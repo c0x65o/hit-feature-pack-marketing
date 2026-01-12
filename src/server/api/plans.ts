@@ -10,6 +10,9 @@ import { marketingPlans, marketingPlanTypes, marketingExpenses } from '@/lib/fea
 import { and, asc, desc, eq, gte, inArray, like, lte, or, sql, type AnyColumn } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import { getProjectLinkingPolicy, isUuid, setLinkedProjectId } from '../lib/project-linking';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { requireMarketingAction } from '../lib/require-action';
+import { extractUserFromRequest } from '../auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,6 +27,15 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
     const { searchParams } = new URL(request.url);
+    const user = extractUserFromRequest(request);
+
+    // Check read permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'plans', verb: 'read' });
+
+    if (mode === 'none') {
+      // Explicit deny: return empty results
+      return NextResponse.json({ items: [], total: 0, limit: 0, offset: 0 });
+    }
 
     const includeArchived = searchParams.get('includeArchived') === 'true';
     const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 500);
@@ -49,6 +61,15 @@ export async function GET(request: NextRequest) {
     if (search) {
       conditions.push(or(like(marketingPlans.title, `%${search}%`))!);
     }
+
+    // Scope mode filtering
+    // Note: Plans don't have createdBy/ownerUserId, so 'own' mode returns empty results
+    if (mode === 'own') {
+      // No ownership field, so deny access
+      return NextResponse.json({ items: [], total: 0, limit: 0, offset: 0 });
+    }
+    // 'any' and 'ldd' modes allow all (no filtering needed)
+
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     let query = db
@@ -113,6 +134,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check create permission
+    const createCheck = await requireMarketingAction(request, 'marketing.plans.create');
+    if (createCheck) return createCheck;
+
+    // Check write permission
+    const mode = await resolveMarketingScopeMode(request, { entity: 'plans', verb: 'write' });
+    // Plans currently have no ownership field; treat 'own' as a hard deny to avoid
+    // creating records that the user can never read/update in 'own' mode.
+    if (mode === 'none' || mode === 'own') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
     const db = getDb();
     const body = await request.json();
 

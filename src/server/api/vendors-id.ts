@@ -9,18 +9,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { marketingVendors } from '@/lib/feature-pack-schemas';
 import { eq } from 'drizzle-orm';
+import { resolveMarketingScopeMode } from '../lib/scope-mode';
+import { extractUserFromRequest } from '../auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const db = getDb();
     const { id } = await params;
+    const user = extractUserFromRequest(request);
+
+    // Check read permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'vendors', verb: 'read' });
+
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+    }
+
     const [vendor] = await db.select().from(marketingVendors).where(eq(marketingVendors.id, id as any)).limit(1);
     if (!vendor) return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+
+    // Scope mode check: 'own' mode denies access since vendors have no ownership field
+    if (mode === 'own') {
+      return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+    }
+    // 'any' and 'ldd' modes allow access
+
     return NextResponse.json(vendor);
   } catch (error) {
     console.error('Error fetching vendor:', error);
@@ -33,9 +51,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const db = getDb();
     const { id } = await params;
     const body = await request.json();
+    const user = extractUserFromRequest(request);
+
+    // Check write permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'vendors', verb: 'write' });
+
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
 
     const [existing] = await db.select({ id: marketingVendors.id }).from(marketingVendors).where(eq(marketingVendors.id, id as any)).limit(1);
     if (!existing) return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+
+    // Scope mode check: 'own' mode denies access since vendors have no ownership field
+    if (mode === 'own') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+    // 'any' and 'ldd' modes allow access
 
     if (body.kind) {
       const validKinds = ['Platform', 'Agency', 'Creator', 'Other'];
@@ -61,12 +93,27 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const db = getDb();
     const { id } = await params;
+    const user = extractUserFromRequest(request);
+
+    // Check delete permission and resolve scope mode
+    const mode = await resolveMarketingScopeMode(request, { entity: 'vendors', verb: 'delete' });
+
+    if (mode === 'none') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+
     const [existing] = await db.select({ id: marketingVendors.id }).from(marketingVendors).where(eq(marketingVendors.id, id as any)).limit(1);
     if (!existing) return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+
+    // Scope mode check: 'own' mode denies access since vendors have no ownership field
+    if (mode === 'own') {
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+    // 'any' and 'ldd' modes allow access
     await db.delete(marketingVendors).where(eq(marketingVendors.id, id as any));
     return NextResponse.json({ success: true });
   } catch (error) {
