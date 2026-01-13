@@ -121,6 +121,9 @@ export async function GET(request: NextRequest) {
 
     const items = plans.map((p: any) => ({
       ...p,
+      // Flatten joined type fields for schema-driven UI consumption.
+      typeName: p?.type?.name ?? null,
+      typeColor: p?.type?.color ?? null,
       budgetAmount: Number(p.budgetAmount || 0),
       monthSpendAmount: Number(spendByPlan[String(p.id)] || 0),
     }));

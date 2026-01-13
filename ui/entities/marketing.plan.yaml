@@ -1,0 +1,98 @@
+version: 1
+
+entities:
+  marketing.plan:
+    meta:
+      titleSingular: Plan
+      titlePlural: Plans
+      descriptionPlural: Marketing budgets and spend tracking
+      routes:
+        root: /marketing
+        list: /marketing/plans
+        new: /marketing/plans/new
+        detail: /marketing/plans/{id}
+        edit: /marketing/plans/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Plans, href: /marketing/plans }
+      actions:
+        createLabel: New Plan
+        editLabel: Edit Plan
+        saveCreateLabel: Create Plan
+        saveUpdateLabel: Update Plan
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Plan
+        deleteConfirmBody: Are you sure you want to delete "{title}"? This action cannot be undone.
+
+    storage:
+      drizzleTable: marketingPlans
+
+    list:
+      tableId: marketing.plans
+      uiStateVersion: 1
+      pageSize: 25
+      initialSort: { sortBy: createdAt, sortOrder: desc }
+      sortWhitelist: [title, createdAt, updatedAt, budgetAmount, isArchived]
+      defaultVisibleOnly: true
+      initialColumnVisibility:
+        title: true
+        typeName: true
+        budgetAmount: true
+        monthSpendAmount: true
+        isArchived: true
+        startDate: false
+        endDate: false
+        createdAt: false
+        updatedAt: false
+      columns:
+        - { key: title, label: Title, sortable: true, filterType: string }
+        - { key: typeName, label: Type, sortable: false, filterType: string }
+        - { key: budgetAmount, label: Budget (USD), sortable: true, filterType: number }
+        - { key: monthSpendAmount, label: This Month (USD), sortable: false, filterType: number }
+        - { key: isArchived, label: Status, sortable: true, filterType: boolean }
+
+    fields:
+      id: { type: text, label: ID }
+      title: { type: text, label: Title, required: true }
+      typeId: { type: select, label: Plan Type, optionSource: marketing.planTypes }
+      typeName: { type: text, label: Plan Type, virtual: true }
+      typeColor: { type: text, label: Plan Type Color, virtual: true }
+
+      budgetAmount: { type: number, label: Budget (USD) }
+      spendAmount: { type: number, label: Spend (USD) }
+      monthSpendAmount: { type: number, label: This Month (USD), virtual: true }
+      actualSpendAmount: { type: number, label: Actual (USD), virtual: true }
+      remainingAmount: { type: number, label: Remaining (USD), virtual: true }
+
+      startDate: { type: date, label: Start Date }
+      endDate: { type: date, label: End Date }
+      allocateByType: { type: boolean, label: Allocate By Type }
+      isArchived: { type: boolean, label: Archived }
+
+      createdAt: { type: datetime, label: Created }
+      updatedAt: { type: datetime, label: Updated }
+
+    form:
+      sections:
+        - id: basic
+          title: Plan
+          layout: { columns: 2 }
+          fields: [title, typeId, budgetAmount, allocateByType, startDate, endDate]
+
+    detail:
+      summaryTitle: Details
+      summaryFields: [typeName, budgetAmount, actualSpendAmount, remainingAmount, allocateByType, startDate, endDate, isArchived, createdAt, updatedAt]
+      extras:
+        - kind: embeddedTable
+          title: Expenses
+          entityType: marketing.expense
+          tableId: marketing.planExpenses
+          pageSize: 25
+          initialSort: { sortBy: occurredAt, sortOrder: desc }
+          sortWhitelist: [occurredAt, amount, createdAt]
+          query:
+            planId: { valueFrom: { kind: parentField, field: id } }
+          createRoute: /marketing/expenses/new?planId={parent.id}
+          emptyMessage: No expenses yet.
+

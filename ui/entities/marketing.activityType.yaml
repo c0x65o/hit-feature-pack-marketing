@@ -1,0 +1,79 @@
+version: 1
+
+entities:
+  marketing.activityType:
+    meta:
+      titleSingular: Activity Type
+      titlePlural: Activity Types
+      descriptionPlural: Categories for marketing expenses
+      routes:
+        root: /marketing
+        list: /marketing/setup/activity-types
+        new: /marketing/setup/activity-types/new
+        detail: /marketing/setup/activity-types/{id}
+        edit: /marketing/setup/activity-types/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Setup, href: /marketing/setup/activity-types }
+      actions:
+        createLabel: New Activity Type
+        editLabel: Edit Activity Type
+        saveCreateLabel: Create Activity Type
+        saveUpdateLabel: Update Activity Type
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Activity Type
+        deleteConfirmBody: Are you sure you want to delete "{name}"? This action cannot be undone.
+
+    storage:
+      drizzleTable: marketingActivityTypes
+
+    list:
+      tableId: marketing.activityTypes
+      uiStateVersion: 1
+      pageSize: 25
+      initialSort: { sortBy: name, sortOrder: asc }
+      sortWhitelist: [name]
+      defaultVisibleOnly: true
+      initialColumnVisibility:
+        name: true
+        key: true
+        category: true
+        isActive: true
+        isSystem: true
+      columns:
+        - { key: name, label: Name, sortable: true, filterType: string }
+        - { key: key, label: Key, sortable: false, filterType: string }
+        - { key: category, label: Category, sortable: false, filterType: string }
+        - { key: isActive, label: Status, sortable: false, filterType: boolean }
+        - { key: isSystem, label: Type, sortable: false, filterType: boolean }
+
+    fields:
+      id: { type: text, label: ID }
+      key: { type: text, label: Key, required: true }
+      name: { type: text, label: Name, required: true }
+      category: { type: text, label: Category }
+      description: { type: textarea, label: Description }
+      color: { type: text, label: Color }
+      icon: { type: text, label: Icon }
+      sortOrder: { type: number, label: Sort Order }
+      isSystem: { type: boolean, label: System }
+      isActive: { type: boolean, label: Active }
+      createdAt: { type: datetime, label: Created }
+      updatedAt: { type: datetime, label: Updated }
+
+    form:
+      sections:
+        - id: activityType
+          title: Activity Type
+          layout: { columns: 2 }
+          fields: [key, name, category, sortOrder, isActive, color, icon]
+        - id: description
+          title: Description
+          layout: { columns: 1 }
+          fields: [description]
+
+    detail:
+      summaryTitle: Details
+      summaryFields: [key, name, category, isActive, isSystem, sortOrder, color, icon, description, createdAt, updatedAt]
+

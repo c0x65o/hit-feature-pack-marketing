@@ -1,0 +1,82 @@
+version: 1
+
+entities:
+  marketing.vendor:
+    meta:
+      titleSingular: Vendor
+      titlePlural: Vendors
+      descriptionPlural: Platforms and vendors used for marketing spend
+      routes:
+        root: /marketing
+        list: /marketing/vendors
+        new: /marketing/vendors/new
+        detail: /marketing/vendors/{id}
+        edit: /marketing/vendors/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Vendors, href: /marketing/vendors }
+      actions:
+        createLabel: New Vendor
+        editLabel: Edit Vendor
+        saveCreateLabel: Create Vendor
+        saveUpdateLabel: Update Vendor
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Vendor
+        deleteConfirmBody: Are you sure you want to delete "{name}"? This action cannot be undone.
+
+    storage:
+      drizzleTable: marketingVendors
+
+    list:
+      tableId: marketing.vendors
+      uiStateVersion: 1
+      pageSize: 25
+      initialSort: { sortBy: name, sortOrder: asc }
+      sortWhitelist: [name]
+      defaultVisibleOnly: true
+      initialColumnVisibility:
+        name: true
+        kind: true
+        contact: true
+        isActive: true
+      columns:
+        - { key: name, label: Name, sortable: true, filterType: string }
+        - { key: kind, label: Kind, sortable: false, filterType: string }
+        - { key: contact, label: Contact, sortable: false, filterType: string }
+        - { key: isActive, label: Status, sortable: false, filterType: boolean }
+
+    fields:
+      id: { type: text, label: ID }
+      name: { type: text, label: Name, required: true }
+      kind:
+        type: select
+        label: Kind
+        required: true
+        options:
+          - { value: Platform, label: Platform }
+          - { value: Agency, label: Agency }
+          - { value: Creator, label: Creator }
+          - { value: Other, label: Other }
+      link: { type: text, label: Website }
+      contact: { type: text, label: Contact }
+      notes: { type: textarea, label: Notes }
+      isActive: { type: boolean, label: Active }
+      createdAt: { type: datetime, label: Created }
+      updatedAt: { type: datetime, label: Updated }
+
+    form:
+      sections:
+        - id: vendor
+          title: Vendor
+          layout: { columns: 2 }
+          fields: [name, kind, isActive, link, contact]
+        - id: notes
+          title: Notes
+          layout: { columns: 1 }
+          fields: [notes]
+
+    detail:
+      summaryTitle: Details
+      summaryFields: [kind, isActive, link, contact, notes, createdAt, updatedAt]
+

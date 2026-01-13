@@ -1,0 +1,89 @@
+version: 1
+
+entities:
+  marketing.expense:
+    meta:
+      titleSingular: Expense
+      titlePlural: Expenses
+      descriptionPlural: Marketing spend entries
+      routes:
+        root: /marketing
+        list: /marketing/expenses
+        new: /marketing/expenses/new
+        detail: /marketing/expenses/{id}
+        edit: /marketing/expenses/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Expenses, href: /marketing/expenses }
+      actions:
+        createLabel: New Expense
+        editLabel: Edit Expense
+        saveCreateLabel: Create Expense
+        saveUpdateLabel: Update Expense
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Expense
+        deleteConfirmBody: Are you sure you want to delete this expense? This action cannot be undone.
+
+    storage:
+      drizzleTable: marketingExpenses
+
+    list:
+      tableId: marketing.expenses
+      uiStateVersion: 1
+      pageSize: 25
+      initialSort: { sortBy: occurredAt, sortOrder: desc }
+      sortWhitelist: [occurredAt, amount, createdAt]
+      defaultVisibleOnly: true
+      initialColumnVisibility:
+        occurredAt: true
+        planTitle: true
+        vendorName: true
+        typeName: true
+        amount: true
+        notes: true
+      columns:
+        - { key: occurredAt, label: Date, sortable: true, filterType: date }
+        - { key: planTitle, label: Plan, sortable: false, filterType: string }
+        - { key: vendorName, label: Vendor, sortable: false, filterType: string }
+        - { key: typeName, label: Type, sortable: false, filterType: string }
+        - { key: amount, label: Amount (USD), sortable: true, filterType: number }
+        - { key: notes, label: Notes, sortable: false, filterType: string }
+
+    fields:
+      id: { type: text, label: ID }
+      occurredAt: { type: datetime, label: Date, required: true }
+      amount: { type: number, label: Amount (USD), required: true }
+      notes: { type: textarea, label: Notes }
+      attachmentUrl: { type: text, label: Attachment URL }
+
+      planId: { type: select, label: Plan, optionSource: marketing.plans }
+      planTitle: { type: text, label: Plan, virtual: true }
+
+      vendorId: { type: select, label: Vendor, optionSource: marketing.vendors }
+      vendorName: { type: text, label: Vendor, virtual: true }
+      vendorKind: { type: text, label: Vendor Kind, virtual: true }
+
+      typeId: { type: select, label: Activity Type, optionSource: marketing.activityTypes }
+      typeName: { type: text, label: Activity Type, virtual: true }
+      typeColor: { type: text, label: Activity Type Color, virtual: true }
+
+      createdBy: { type: text, label: Created By }
+      createdAt: { type: datetime, label: Created }
+      updatedAt: { type: datetime, label: Updated }
+
+    form:
+      sections:
+        - id: expense
+          title: Expense
+          layout: { columns: 2 }
+          fields: [occurredAt, amount, planId, vendorId, typeId]
+        - id: notes
+          title: Notes
+          layout: { columns: 1 }
+          fields: [notes]
+
+    detail:
+      summaryTitle: Details
+      summaryFields: [occurredAt, amount, planTitle, vendorName, typeName, notes, createdAt, updatedAt]
+

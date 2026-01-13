@@ -1,0 +1,76 @@
+version: 1
+
+entities:
+  marketing.planType:
+    meta:
+      titleSingular: Plan Type
+      titlePlural: Plan Types
+      descriptionPlural: Categories for marketing plans
+      routes:
+        root: /marketing
+        list: /marketing/setup/plan-types
+        new: /marketing/setup/plan-types/new
+        detail: /marketing/setup/plan-types/{id}
+        edit: /marketing/setup/plan-types/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Setup, href: /marketing/setup/plan-types }
+      actions:
+        createLabel: New Plan Type
+        editLabel: Edit Plan Type
+        saveCreateLabel: Create Plan Type
+        saveUpdateLabel: Update Plan Type
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Plan Type
+        deleteConfirmBody: Are you sure you want to delete "{name}"? This action cannot be undone.
+
+    storage:
+      drizzleTable: marketingPlanTypes
+
+    list:
+      tableId: marketing.planTypes
+      uiStateVersion: 1
+      pageSize: 25
+      initialSort: { sortBy: name, sortOrder: asc }
+      sortWhitelist: [name]
+      defaultVisibleOnly: true
+      initialColumnVisibility:
+        name: true
+        key: true
+        isActive: true
+        isSystem: true
+      columns:
+        - { key: name, label: Name, sortable: true, filterType: string }
+        - { key: key, label: Key, sortable: false, filterType: string }
+        - { key: isActive, label: Status, sortable: false, filterType: boolean }
+        - { key: isSystem, label: Type, sortable: false, filterType: boolean }
+
+    fields:
+      id: { type: text, label: ID }
+      key: { type: text, label: Key, required: true }
+      name: { type: text, label: Name, required: true }
+      description: { type: textarea, label: Description }
+      color: { type: text, label: Color }
+      icon: { type: text, label: Icon }
+      sortOrder: { type: number, label: Sort Order }
+      isSystem: { type: boolean, label: System }
+      isActive: { type: boolean, label: Active }
+      createdAt: { type: datetime, label: Created }
+      updatedAt: { type: datetime, label: Updated }
+
+    form:
+      sections:
+        - id: planType
+          title: Plan Type
+          layout: { columns: 2 }
+          fields: [key, name, sortOrder, isActive, color, icon]
+        - id: description
+          title: Description
+          layout: { columns: 1 }
+          fields: [description]
+
+    detail:
+      summaryTitle: Details
+      summaryFields: [key, name, isActive, isSystem, sortOrder, color, icon, description, createdAt, updatedAt]
+
