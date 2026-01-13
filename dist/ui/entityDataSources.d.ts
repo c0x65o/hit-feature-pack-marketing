@@ -1,4 +1,4 @@
-import type { DataTableColumn } from './entityTable';
+import type { DataTableColumn } from '@hit/ui-kit';
 export type ListQueryArgs = {
     page: number;
     pageSize: number;

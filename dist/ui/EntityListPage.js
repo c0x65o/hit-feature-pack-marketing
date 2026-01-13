@@ -5,8 +5,8 @@ import { Plus } from 'lucide-react';
 import { useUi } from '@hit/ui-kit';
 import { useAlertDialog } from '@hit/ui-kit/hooks/useAlertDialog';
 import { useServerDataTableState } from '@hit/ui-kit';
+import { useEntityDataTableColumns } from '@hit/ui-kit';
 import { useEntityUiSpec } from './useHitUiSpecs';
-import { useEntityDataTableColumns } from './entityTable';
 import { useEntityDataSource } from './entityDataSources';
 function getDisplayValue(row) {
     return String(row?.title || row?.name || row?.key || row?.id || '').trim();
