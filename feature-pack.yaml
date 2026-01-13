@@ -13,59 +13,103 @@ routes:
     roles: []
     authz: { entity: marketing, verb: read }
   - path: /marketing/plans
-    page: PlansList
+    page: EntityList
+    params: { entityKey: marketing.plan }
     roles: []
     authz: { entity: plans, verb: read }
   - path: /marketing/plans/new
-    page: PlanEdit
+    page: EntityEdit
+    params: { entityKey: marketing.plan }
     roles: []
     authz: { entity: plans, verb: write, require_create: true }
   - path: /marketing/plans/[id]
-    page: PlanDetail
+    page: EntityDetail
+    params: { entityKey: marketing.plan }
     roles: []
     authz: { entity: plans, verb: read }
   - path: /marketing/plans/[id]/edit
-    page: PlanEdit
+    page: EntityEdit
+    params: { entityKey: marketing.plan }
     roles: []
     authz: { entity: plans, verb: write }
   - path: /marketing/expenses
-    page: ExpensesList
+    page: EntityList
+    params: { entityKey: marketing.expense }
     roles: []
     authz: { entity: expenses, verb: read }
   - path: /marketing/expenses/new
-    page: ExpenseEdit
+    page: EntityEdit
+    params: { entityKey: marketing.expense }
     roles: []
     authz: { entity: expenses, verb: write, require_create: true }
   - path: /marketing/expenses/[id]
-    page: ExpenseDetail
+    page: EntityDetail
+    params: { entityKey: marketing.expense }
     roles: []
     authz: { entity: expenses, verb: read }
   - path: /marketing/expenses/[id]/edit
-    page: ExpenseEdit
+    page: EntityEdit
+    params: { entityKey: marketing.expense }
     roles: []
     authz: { entity: expenses, verb: write }
   - path: /marketing/vendors
-    page: VendorsList
+    page: EntityList
+    params: { entityKey: marketing.vendor }
     roles: []
     authz: { entity: vendors, verb: read }
   - path: /marketing/vendors/new
-    page: VendorEdit
+    page: EntityEdit
+    params: { entityKey: marketing.vendor }
     roles: []
     authz: { entity: vendors, verb: write, require_create: true }
   - path: /marketing/vendors/[id]
-    page: VendorDetail
+    page: EntityDetail
+    params: { entityKey: marketing.vendor }
     roles: []
     authz: { entity: vendors, verb: read }
   - path: /marketing/vendors/[id]/edit
-    page: VendorEdit
+    page: EntityEdit
+    params: { entityKey: marketing.vendor }
     roles: []
     authz: { entity: vendors, verb: write }
   - path: /marketing/setup/plan-types
-    page: PlanTypesSetup
+    page: EntityList
+    params: { entityKey: marketing.planType }
+    roles: [admin]
+    default_roles_allow: [admin]
+  - path: /marketing/setup/plan-types/new
+    page: EntityEdit
+    params: { entityKey: marketing.planType }
+    roles: [admin]
+    default_roles_allow: [admin]
+  - path: /marketing/setup/plan-types/[id]
+    page: EntityDetail
+    params: { entityKey: marketing.planType }
+    roles: [admin]
+    default_roles_allow: [admin]
+  - path: /marketing/setup/plan-types/[id]/edit
+    page: EntityEdit
+    params: { entityKey: marketing.planType }
     roles: [admin]
     default_roles_allow: [admin]
   - path: /marketing/setup/activity-types
-    page: ActivityTypesSetup
+    page: EntityList
+    params: { entityKey: marketing.activityType }
+    roles: [admin]
+    default_roles_allow: [admin]
+  - path: /marketing/setup/activity-types/new
+    page: EntityEdit
+    params: { entityKey: marketing.activityType }
+    roles: [admin]
+    default_roles_allow: [admin]
+  - path: /marketing/setup/activity-types/[id]
+    page: EntityDetail
+    params: { entityKey: marketing.activityType }
+    roles: [admin]
+    default_roles_allow: [admin]
+  - path: /marketing/setup/activity-types/[id]/edit
+    page: EntityEdit
+    params: { entityKey: marketing.activityType }
     roles: [admin]
     default_roles_allow: [admin]
 
