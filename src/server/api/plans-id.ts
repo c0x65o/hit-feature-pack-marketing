@@ -92,6 +92,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       amount: Number(expense.amount || 0),
       type: type || null,
       vendor: vendor || null,
+      // Flatten joined fields for schema-driven UI consumption.
+      typeName: type?.name ?? null,
+      typeColor: type?.color ?? null,
+      vendorName: vendor?.name ?? null,
+      vendorKind: vendor?.kind ?? null,
     }));
 
     const [spendRow] = await db
@@ -111,6 +116,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       actualSpendAmount: actual,
       remainingAmount: budget - actual,
       type: row.type || null,
+      // Flatten joined type fields for schema-driven UI consumption.
+      typeName: row.type?.name ?? null,
+      typeColor: row.type?.color ?? null,
       expenses,
       projectId,
     });

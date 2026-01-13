@@ -66,6 +66,12 @@ export async function GET(request, { params }) {
             plan: row.plan || null,
             type: row.type || null,
             vendor: row.vendor || null,
+            // Flatten joined fields for schema-driven UI consumption.
+            planTitle: row.plan?.title ?? null,
+            typeName: row.type?.name ?? null,
+            typeColor: row.type?.color ?? null,
+            vendorName: row.vendor?.name ?? null,
+            vendorKind: row.vendor?.kind ?? null,
             projectId,
         });
     }
@@ -173,6 +179,12 @@ export async function PUT(request, { params }) {
             plan: row.plan || null,
             type: row.type || null,
             vendor: row.vendor || null,
+            // Flatten joined fields for schema-driven UI consumption.
+            planTitle: row.plan?.title ?? null,
+            typeName: row.type?.name ?? null,
+            typeColor: row.type?.color ?? null,
+            vendorName: row.vendor?.name ?? null,
+            vendorKind: row.vendor?.kind ?? null,
             projectId,
         });
     }

@@ -138,6 +138,12 @@ export async function GET(request: NextRequest) {
       plan: plan || null,
       type: type || null,
       vendor: vendor || null,
+      // Flatten joined fields for schema-driven UI consumption.
+      planTitle: plan?.title ?? null,
+      typeName: type?.name ?? null,
+      typeColor: type?.color ?? null,
+      vendorName: vendor?.name ?? null,
+      vendorKind: vendor?.kind ?? null,
     }));
 
     const includeTotals = searchParams.get('includeTotals') === 'true';
