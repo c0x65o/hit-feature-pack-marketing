@@ -41,10 +41,10 @@ entities:
         contact: true
         isActive: true
       columns:
-        - { key: name, label: Name, sortable: true, filterType: string }
-        - { key: kind, label: Kind, sortable: false, filterType: string }
-        - { key: contact, label: Contact, sortable: false, filterType: string }
-        - { key: isActive, label: Status, sortable: false, filterType: boolean }
+        - name
+        - kind
+        - contact
+        - isActive
 
     fields:
       id: { type: text, label: ID }

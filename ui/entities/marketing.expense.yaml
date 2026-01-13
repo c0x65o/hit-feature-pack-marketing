@@ -43,12 +43,12 @@ entities:
         amount: true
         notes: true
       columns:
-        - { key: occurredAt, label: Date, sortable: true, filterType: date }
-        - { key: planTitle, label: Plan, sortable: false, filterType: string }
-        - { key: vendorName, label: Vendor, sortable: false, filterType: string }
-        - { key: typeName, label: Type, sortable: false, filterType: string }
-        - { key: amount, label: Amount (USD), sortable: true, filterType: number }
-        - { key: notes, label: Notes, sortable: false, filterType: string }
+        - occurredAt
+        - planTitle
+        - vendorName
+        - typeName
+        - amount
+        - notes
 
     fields:
       id: { type: text, label: ID }

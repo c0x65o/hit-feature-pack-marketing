@@ -42,11 +42,11 @@ entities:
         isActive: true
         isSystem: true
       columns:
-        - { key: name, label: Name, sortable: true, filterType: string }
-        - { key: key, label: Key, sortable: false, filterType: string }
-        - { key: category, label: Category, sortable: false, filterType: string }
-        - { key: isActive, label: Status, sortable: false, filterType: boolean }
-        - { key: isSystem, label: Type, sortable: false, filterType: boolean }
+        - name
+        - key
+        - category
+        - isActive
+        - isSystem
 
     fields:
       id: { type: text, label: ID }

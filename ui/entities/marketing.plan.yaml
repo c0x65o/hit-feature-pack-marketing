@@ -46,11 +46,11 @@ entities:
         createdAt: false
         updatedAt: false
       columns:
-        - { key: title, label: Title, sortable: true, filterType: string }
-        - { key: typeName, label: Type, sortable: false, filterType: string }
-        - { key: budgetAmount, label: Budget (USD), sortable: true, filterType: number }
-        - { key: monthSpendAmount, label: This Month (USD), sortable: false, filterType: number }
-        - { key: isArchived, label: Status, sortable: true, filterType: boolean }
+        - title
+        - typeName
+        - budgetAmount
+        - monthSpendAmount
+        - isArchived
 
     fields:
       id: { type: text, label: ID }
