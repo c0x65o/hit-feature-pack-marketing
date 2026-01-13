@@ -2,8 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import { useUi } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
+import { useServerDataTableState, useUi } from '@hit/ui-kit';
 import { useEntityUiSpec } from '../useHitUiSpecs';
 import { useEntityDataTableColumns } from '../entityTable';
 import type { EmbeddedTableSpec } from '../EmbeddedEntityTable';
@@ -86,6 +85,7 @@ export function MarketingExpensesEmbeddedTable({
 
   const columns = useEntityDataTableColumns({
     listSpec: effectiveListSpec as any,
+    fieldsMap: (expenseUiSpec as any)?.fields || null,
     isMobile: false,
     customRenderers: {
       occurredAt: (v) => {

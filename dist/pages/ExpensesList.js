@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUi } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
+import { useServerDataTableState } from '@hit/ui-kit';
 import { Plus, Receipt } from 'lucide-react';
 function formatUsd(n) {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number.isFinite(n) ? n : 0);

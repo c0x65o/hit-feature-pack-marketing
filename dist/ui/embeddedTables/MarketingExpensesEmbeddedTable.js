@@ -2,8 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React, { useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import { useUi } from '@hit/ui-kit';
-import { useServerDataTableState } from '@hit/ui-kit/hooks/useServerDataTableState';
+import { useServerDataTableState, useUi } from '@hit/ui-kit';
 import { useEntityUiSpec } from '../useHitUiSpecs';
 import { useEntityDataTableColumns } from '../entityTable';
 function readParentField(spec, parent, queryKey) {
@@ -74,6 +73,7 @@ export function MarketingExpensesEmbeddedTable({ spec, parent, navigate, }) {
     }, [spec.columns, expenseListSpec]);
     const columns = useEntityDataTableColumns({
         listSpec: effectiveListSpec,
+        fieldsMap: expenseUiSpec?.fields || null,
         isMobile: false,
         customRenderers: {
             occurredAt: (v) => {
