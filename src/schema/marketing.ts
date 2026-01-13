@@ -149,7 +149,7 @@ export const marketingEntityLinks = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     marketingEntityType: text('marketing_entity_type').notNull(), // 'plan', 'expense', etc.
     marketingEntityId: uuid('marketing_entity_id').notNull(),
-    linkedEntityKind: text('linked_entity_kind').notNull(), // 'project', 'crm.company', etc.
+    linkedEntityKind: text('linked_entity_kind').notNull(), // 'project', 'crm.prospect', etc.
     linkedEntityId: uuid('linked_entity_id').notNull(),
     metadata: jsonb('metadata'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
