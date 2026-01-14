@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { useUi } from '@hit/ui-kit';
+import { splitLinkedEntityTabsExtra, wrapWithLinkedEntityTabsIfConfigured } from '@hit/feature-pack-form-core';
 import { EmbeddedEntityTable, type EmbeddedTableSpec } from './EmbeddedEntityTable';
 import { useEntityDataSource } from './entityDataSources';
 
@@ -137,14 +138,14 @@ export function EntityDetailBody({
   }, [registries]);
 
   const detailSpec = asRecord(uiSpec?.detail) || {};
-  const extras: any[] = Array.isArray(detailSpec.extras) ? detailSpec.extras : [];
+  const { linkedEntityTabs, extras } = splitLinkedEntityTabsExtra((detailSpec as any).extras);
 
   const summaryFields = useMemo(() => {
     const explicit = Array.isArray(detailSpec.summaryFields) ? detailSpec.summaryFields.map(String) : null;
     return explicit && explicit.length > 0 ? explicit : getDefaultSummaryFields(uiSpec);
   }, [detailSpec.summaryFields, uiSpec]);
 
-  return (
+  const inner = (
     <>
       <Card className="mb-4">
         <div className="p-4">
@@ -181,5 +182,13 @@ export function EntityDetailBody({
         })}
     </>
   );
+
+  return wrapWithLinkedEntityTabsIfConfigured({
+    linkedEntityTabs,
+    entityKey,
+    record,
+    navigate,
+    overview: inner,
+  });
 }
 
