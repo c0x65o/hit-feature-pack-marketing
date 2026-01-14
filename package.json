@@ -1,6 +1,6 @@
 {
   "name": "@hit/feature-pack-marketing",
-  "version": "1.0.47",
+  "version": "1.0.48",
   "description": "A HIT feature pack",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,7 +47,11 @@
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build"
   },
+  "dependencies": {
+    "@hit/feature-pack-auth-core": "file:../core/hit-feature-pack-auth-core"
+  },
   "peerDependencies": {
+    "@hit/feature-pack-auth-core": "*",
     "@hit/feature-pack-form-core": "*",
     "@hit/sdk": "*",
     "@hit/ui-kit": "*",
