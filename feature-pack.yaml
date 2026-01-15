@@ -2,6 +2,7 @@
 # Standalone marketing with plans, expenses, vendors, and dashboards (optional project linking via feature flag)
 
 name: marketing
+title: Marketing
 description: Standalone marketing with plans, expenses, vendors, and dashboards (optional project linking via feature flag)
 
 # ─────────────────────────────────────────────────────────────────────────────
