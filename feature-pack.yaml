@@ -78,41 +78,49 @@ routes:
     params: { entityKey: marketing.planType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.plan-types.access, show_pages: true }
   - path: /marketing/setup/plan-types/new
     page: EntityEdit
     params: { entityKey: marketing.planType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.plan-types.access, show_pages: true }
   - path: /marketing/setup/plan-types/[id]
     page: EntityDetail
     params: { entityKey: marketing.planType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.plan-types.access, show_pages: true }
   - path: /marketing/setup/plan-types/[id]/edit
     page: EntityEdit
     params: { entityKey: marketing.planType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.plan-types.access, show_pages: true }
   - path: /marketing/setup/activity-types
     page: EntityList
     params: { entityKey: marketing.activityType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
   - path: /marketing/setup/activity-types/new
     page: EntityEdit
     params: { entityKey: marketing.activityType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
   - path: /marketing/setup/activity-types/[id]
     page: EntityDetail
     params: { entityKey: marketing.activityType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
   - path: /marketing/setup/activity-types/[id]/edit
     page: EntityEdit
     params: { entityKey: marketing.activityType }
     roles: [admin]
     default_roles_allow: [admin]
+    authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
 
 # ─────────────────────────────────────────────────────────────────────────────
 # NAVIGATION - Sidebar/topbar items
@@ -264,13 +272,22 @@ api:
 # ─────────────────────────────────────────────────────────────────────────────
 permissions:
   actions:
+    # Marketing Setup pages (per-page toggles; no LDD; simple on/off).
+    - key: marketing.setup.plan-types.access
+      label: "Marketing Setup: Plan Types"
+      description: "Access marketing setup: manage plan types."
+      default_enabled: false
+    - key: marketing.setup.activity-types.access
+      label: "Marketing Setup: Activity Types"
+      description: "Access marketing setup: manage activity types."
+      default_enabled: false
+
     # Scope Policy Tree: Marketing (global) -> entity overrides.
     #
     # Scope modes:
     # - none: deny all access for this verb/entity (hide pages + block APIs)
     # - all: ignore scope (read everything)
     # - own: only owned records (based on createdBy for expenses, or plan's createdBy for plans)
-    # - ldd: same as all (marketing entities don't have LDD fields)
     #
     # These are mutually exclusive per node; the Security Groups UI renders them as dropdowns.
     - key: marketing.read.scope.none
@@ -285,10 +302,6 @@ permissions:
       label: "Marketing Read Scope = Own"
       description: "Read only marketing entities you created."
       default_enabled: false
-    - key: marketing.read.scope.ldd
-      label: "Marketing Read Scope = LDD"
-      description: "Read marketing entities (same as all, since marketing has no LDD fields)."
-      default_enabled: false
 
     - key: marketing.write.scope.none
       label: "Marketing Write Scope = None"
@@ -302,10 +315,6 @@ permissions:
       label: "Marketing Write Scope = Own"
       description: "Edit only marketing entities you created."
       default_enabled: false
-    - key: marketing.write.scope.ldd
-      label: "Marketing Write Scope = LDD"
-      description: "Edit marketing entities (same as all, since marketing has no LDD fields)."
-      default_enabled: false
 
     - key: marketing.delete.scope.none
       label: "Marketing Delete Scope = None"
@@ -318,10 +327,6 @@ permissions:
     - key: marketing.delete.scope.own
       label: "Marketing Delete Scope = Own"
       description: "Delete only marketing entities you created."
-      default_enabled: false
-    - key: marketing.delete.scope.ldd
-      label: "Marketing Delete Scope = LDD"
-      description: "Delete marketing entities (same as all, since marketing has no LDD fields)."
       default_enabled: false
 
     # Plans override
@@ -337,10 +342,6 @@ permissions:
       label: "Marketing Plans Read Scope = Own"
       description: "Read only plans you created."
       default_enabled: false
-    - key: marketing.plans.read.scope.ldd
-      label: "Marketing Plans Read Scope = LDD"
-      description: "Read plans (same as all, since plans have no LDD fields)."
-      default_enabled: false
 
     - key: marketing.plans.write.scope.none
       label: "Marketing Plans Write Scope = None"
@@ -354,10 +355,6 @@ permissions:
       label: "Marketing Plans Write Scope = Own"
       description: "Edit only plans you created."
       default_enabled: false
-    - key: marketing.plans.write.scope.ldd
-      label: "Marketing Plans Write Scope = LDD"
-      description: "Edit plans (same as all, since plans have no LDD fields)."
-      default_enabled: false
 
     - key: marketing.plans.delete.scope.none
       label: "Marketing Plans Delete Scope = None"
@@ -370,10 +367,6 @@ permissions:
     - key: marketing.plans.delete.scope.own
       label: "Marketing Plans Delete Scope = Own"
       description: "Delete only plans you created."
-      default_enabled: false
-    - key: marketing.plans.delete.scope.ldd
-      label: "Marketing Plans Delete Scope = LDD"
-      description: "Delete plans (same as all, since plans have no LDD fields)."
       default_enabled: false
 
     - key: marketing.plans.create
@@ -394,10 +387,6 @@ permissions:
       label: "Marketing Expenses Read Scope = Own"
       description: "Read only expenses you created."
       default_enabled: false
-    - key: marketing.expenses.read.scope.ldd
-      label: "Marketing Expenses Read Scope = LDD"
-      description: "Read expenses (same as all, since expenses have no LDD fields)."
-      default_enabled: false
 
     - key: marketing.expenses.write.scope.none
       label: "Marketing Expenses Write Scope = None"
@@ -411,10 +400,6 @@ permissions:
       label: "Marketing Expenses Write Scope = Own"
       description: "Edit only expenses you created."
       default_enabled: false
-    - key: marketing.expenses.write.scope.ldd
-      label: "Marketing Expenses Write Scope = LDD"
-      description: "Edit expenses (same as all, since expenses have no LDD fields)."
-      default_enabled: false
 
     - key: marketing.expenses.delete.scope.none
       label: "Marketing Expenses Delete Scope = None"
@@ -427,10 +412,6 @@ permissions:
     - key: marketing.expenses.delete.scope.own
       label: "Marketing Expenses Delete Scope = Own"
       description: "Delete only expenses you created."
-      default_enabled: false
-    - key: marketing.expenses.delete.scope.ldd
-      label: "Marketing Expenses Delete Scope = LDD"
-      description: "Delete expenses (same as all, since expenses have no LDD fields)."
       default_enabled: false
 
     - key: marketing.expenses.create
@@ -451,10 +432,6 @@ permissions:
       label: "Marketing Vendors Read Scope = Own"
       description: "Read only vendors you created."
       default_enabled: false
-    - key: marketing.vendors.read.scope.ldd
-      label: "Marketing Vendors Read Scope = LDD"
-      description: "Read vendors (same as all, since vendors have no LDD fields)."
-      default_enabled: false
 
     - key: marketing.vendors.write.scope.none
       label: "Marketing Vendors Write Scope = None"
@@ -468,10 +445,6 @@ permissions:
       label: "Marketing Vendors Write Scope = Own"
       description: "Edit only vendors you created."
       default_enabled: false
-    - key: marketing.vendors.write.scope.ldd
-      label: "Marketing Vendors Write Scope = LDD"
-      description: "Edit vendors (same as all, since vendors have no LDD fields)."
-      default_enabled: false
 
     - key: marketing.vendors.delete.scope.none
       label: "Marketing Vendors Delete Scope = None"
@@ -484,10 +457,6 @@ permissions:
     - key: marketing.vendors.delete.scope.own
       label: "Marketing Vendors Delete Scope = Own"
       description: "Delete only vendors you created."
-      default_enabled: false
-    - key: marketing.vendors.delete.scope.ldd
-      label: "Marketing Vendors Delete Scope = LDD"
-      description: "Delete vendors (same as all, since vendors have no LDD fields)."
       default_enabled: false
 
     - key: marketing.vendors.create
