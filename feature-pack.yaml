@@ -267,17 +267,17 @@ permissions:
     #
     # Scope modes:
     # - none: deny all access for this verb/entity (hide pages + block APIs)
-    # - any: ignore scope (read everything)
+    # - all: ignore scope (read everything)
     # - own: only owned records (based on createdBy for expenses, or plan's createdBy for plans)
-    # - ldd: same as any (marketing entities don't have LDD fields)
+    # - ldd: same as all (marketing entities don't have LDD fields)
     #
     # These are mutually exclusive per node; the Security Groups UI renders them as dropdowns.
     - key: marketing.read.scope.none
       label: "Marketing Read Scope = None"
       description: "Deny all marketing read access."
       default_enabled: false
-    - key: marketing.read.scope.any
-      label: "Marketing Read Scope = Any"
+    - key: marketing.read.scope.all
+      label: "Marketing Read Scope = All"
       description: "Read all marketing entities regardless of ownership."
       default_enabled: false
     - key: marketing.read.scope.own
@@ -286,15 +286,15 @@ permissions:
       default_enabled: false
     - key: marketing.read.scope.ldd
       label: "Marketing Read Scope = LDD"
-      description: "Read marketing entities (same as any, since marketing has no LDD fields)."
+      description: "Read marketing entities (same as all, since marketing has no LDD fields)."
       default_enabled: false
 
     - key: marketing.write.scope.none
       label: "Marketing Write Scope = None"
       description: "Deny all marketing write access."
       default_enabled: false
-    - key: marketing.write.scope.any
-      label: "Marketing Write Scope = Any"
+    - key: marketing.write.scope.all
+      label: "Marketing Write Scope = All"
       description: "Edit marketing entities regardless of ownership."
       default_enabled: false
     - key: marketing.write.scope.own
@@ -303,15 +303,15 @@ permissions:
       default_enabled: false
     - key: marketing.write.scope.ldd
       label: "Marketing Write Scope = LDD"
-      description: "Edit marketing entities (same as any, since marketing has no LDD fields)."
+      description: "Edit marketing entities (same as all, since marketing has no LDD fields)."
       default_enabled: false
 
     - key: marketing.delete.scope.none
       label: "Marketing Delete Scope = None"
       description: "Deny all marketing delete access."
       default_enabled: false
-    - key: marketing.delete.scope.any
-      label: "Marketing Delete Scope = Any"
+    - key: marketing.delete.scope.all
+      label: "Marketing Delete Scope = All"
       description: "Delete marketing entities regardless of ownership."
       default_enabled: false
     - key: marketing.delete.scope.own
@@ -320,7 +320,7 @@ permissions:
       default_enabled: false
     - key: marketing.delete.scope.ldd
       label: "Marketing Delete Scope = LDD"
-      description: "Delete marketing entities (same as any, since marketing has no LDD fields)."
+      description: "Delete marketing entities (same as all, since marketing has no LDD fields)."
       default_enabled: false
 
     # Plans override
@@ -328,8 +328,8 @@ permissions:
       label: "Marketing Plans Read Scope = None"
       description: "Deny all plan read access."
       default_enabled: false
-    - key: marketing.plans.read.scope.any
-      label: "Marketing Plans Read Scope = Any"
+    - key: marketing.plans.read.scope.all
+      label: "Marketing Plans Read Scope = All"
       description: "Read plans regardless of ownership."
       default_enabled: false
     - key: marketing.plans.read.scope.own
@@ -338,15 +338,15 @@ permissions:
       default_enabled: false
     - key: marketing.plans.read.scope.ldd
       label: "Marketing Plans Read Scope = LDD"
-      description: "Read plans (same as any, since plans have no LDD fields)."
+      description: "Read plans (same as all, since plans have no LDD fields)."
       default_enabled: false
 
     - key: marketing.plans.write.scope.none
       label: "Marketing Plans Write Scope = None"
       description: "Deny all plan write access."
       default_enabled: false
-    - key: marketing.plans.write.scope.any
-      label: "Marketing Plans Write Scope = Any"
+    - key: marketing.plans.write.scope.all
+      label: "Marketing Plans Write Scope = All"
       description: "Edit plans regardless of ownership."
       default_enabled: false
     - key: marketing.plans.write.scope.own
@@ -355,15 +355,15 @@ permissions:
       default_enabled: false
     - key: marketing.plans.write.scope.ldd
       label: "Marketing Plans Write Scope = LDD"
-      description: "Edit plans (same as any, since plans have no LDD fields)."
+      description: "Edit plans (same as all, since plans have no LDD fields)."
       default_enabled: false
 
     - key: marketing.plans.delete.scope.none
       label: "Marketing Plans Delete Scope = None"
       description: "Deny all plan delete access."
       default_enabled: false
-    - key: marketing.plans.delete.scope.any
-      label: "Marketing Plans Delete Scope = Any"
+    - key: marketing.plans.delete.scope.all
+      label: "Marketing Plans Delete Scope = All"
       description: "Delete plans regardless of ownership."
       default_enabled: false
     - key: marketing.plans.delete.scope.own
@@ -372,7 +372,7 @@ permissions:
       default_enabled: false
     - key: marketing.plans.delete.scope.ldd
       label: "Marketing Plans Delete Scope = LDD"
-      description: "Delete plans (same as any, since plans have no LDD fields)."
+      description: "Delete plans (same as all, since plans have no LDD fields)."
       default_enabled: false
 
     - key: marketing.plans.create
@@ -385,8 +385,8 @@ permissions:
       label: "Marketing Expenses Read Scope = None"
       description: "Deny all expense read access."
       default_enabled: false
-    - key: marketing.expenses.read.scope.any
-      label: "Marketing Expenses Read Scope = Any"
+    - key: marketing.expenses.read.scope.all
+      label: "Marketing Expenses Read Scope = All"
       description: "Read expenses regardless of ownership."
       default_enabled: false
     - key: marketing.expenses.read.scope.own
@@ -395,15 +395,15 @@ permissions:
       default_enabled: false
     - key: marketing.expenses.read.scope.ldd
       label: "Marketing Expenses Read Scope = LDD"
-      description: "Read expenses (same as any, since expenses have no LDD fields)."
+      description: "Read expenses (same as all, since expenses have no LDD fields)."
       default_enabled: false
 
     - key: marketing.expenses.write.scope.none
       label: "Marketing Expenses Write Scope = None"
       description: "Deny all expense write access."
       default_enabled: false
-    - key: marketing.expenses.write.scope.any
-      label: "Marketing Expenses Write Scope = Any"
+    - key: marketing.expenses.write.scope.all
+      label: "Marketing Expenses Write Scope = All"
       description: "Edit expenses regardless of ownership."
       default_enabled: false
     - key: marketing.expenses.write.scope.own
@@ -412,15 +412,15 @@ permissions:
       default_enabled: false
     - key: marketing.expenses.write.scope.ldd
       label: "Marketing Expenses Write Scope = LDD"
-      description: "Edit expenses (same as any, since expenses have no LDD fields)."
+      description: "Edit expenses (same as all, since expenses have no LDD fields)."
       default_enabled: false
 
     - key: marketing.expenses.delete.scope.none
       label: "Marketing Expenses Delete Scope = None"
       description: "Deny all expense delete access."
       default_enabled: false
-    - key: marketing.expenses.delete.scope.any
-      label: "Marketing Expenses Delete Scope = Any"
+    - key: marketing.expenses.delete.scope.all
+      label: "Marketing Expenses Delete Scope = All"
       description: "Delete expenses regardless of ownership."
       default_enabled: false
     - key: marketing.expenses.delete.scope.own
@@ -429,7 +429,7 @@ permissions:
       default_enabled: false
     - key: marketing.expenses.delete.scope.ldd
       label: "Marketing Expenses Delete Scope = LDD"
-      description: "Delete expenses (same as any, since expenses have no LDD fields)."
+      description: "Delete expenses (same as all, since expenses have no LDD fields)."
       default_enabled: false
 
     - key: marketing.expenses.create
@@ -442,8 +442,8 @@ permissions:
       label: "Marketing Vendors Read Scope = None"
       description: "Deny all vendor read access."
       default_enabled: false
-    - key: marketing.vendors.read.scope.any
-      label: "Marketing Vendors Read Scope = Any"
+    - key: marketing.vendors.read.scope.all
+      label: "Marketing Vendors Read Scope = All"
       description: "Read vendors regardless of ownership."
       default_enabled: false
     - key: marketing.vendors.read.scope.own
@@ -452,15 +452,15 @@ permissions:
       default_enabled: false
     - key: marketing.vendors.read.scope.ldd
       label: "Marketing Vendors Read Scope = LDD"
-      description: "Read vendors (same as any, since vendors have no LDD fields)."
+      description: "Read vendors (same as all, since vendors have no LDD fields)."
       default_enabled: false
 
     - key: marketing.vendors.write.scope.none
       label: "Marketing Vendors Write Scope = None"
       description: "Deny all vendor write access."
       default_enabled: false
-    - key: marketing.vendors.write.scope.any
-      label: "Marketing Vendors Write Scope = Any"
+    - key: marketing.vendors.write.scope.all
+      label: "Marketing Vendors Write Scope = All"
       description: "Edit vendors regardless of ownership."
       default_enabled: false
     - key: marketing.vendors.write.scope.own
@@ -469,15 +469,15 @@ permissions:
       default_enabled: false
     - key: marketing.vendors.write.scope.ldd
       label: "Marketing Vendors Write Scope = LDD"
-      description: "Edit vendors (same as any, since vendors have no LDD fields)."
+      description: "Edit vendors (same as all, since vendors have no LDD fields)."
       default_enabled: false
 
     - key: marketing.vendors.delete.scope.none
       label: "Marketing Vendors Delete Scope = None"
       description: "Deny all vendor delete access."
       default_enabled: false
-    - key: marketing.vendors.delete.scope.any
-      label: "Marketing Vendors Delete Scope = Any"
+    - key: marketing.vendors.delete.scope.all
+      label: "Marketing Vendors Delete Scope = All"
       description: "Delete vendors regardless of ownership."
       default_enabled: false
     - key: marketing.vendors.delete.scope.own
@@ -486,7 +486,7 @@ permissions:
       default_enabled: false
     - key: marketing.vendors.delete.scope.ldd
       label: "Marketing Vendors Delete Scope = LDD"
-      description: "Delete vendors (same as any, since vendors have no LDD fields)."
+      description: "Delete vendors (same as all, since vendors have no LDD fields)."
       default_enabled: false
 
     - key: marketing.vendors.create
