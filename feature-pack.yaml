@@ -10,9 +10,8 @@ description: Standalone marketing with plans, expenses, vendors, and dashboards 
 # ─────────────────────────────────────────────────────────────────────────────
 routes:
   - path: /marketing
-    page: Dashboard
-    roles: []
-    authz: { entity: marketing, verb: read }
+    page: EntityList
+    params: { entityKey: marketing.plan }
   - path: /marketing/plans
     page: EntityList
     params: { entityKey: marketing.plan }
@@ -198,22 +197,6 @@ api:
       methods: [GET, PUT, DELETE]
       handler: "@hit/feature-pack-marketing/server/api/vendors-id"
       description: "Get, update, or delete a specific vendor"
-    - path: /api/marketing/plan-types
-      methods: [GET, POST]
-      handler: "@hit/feature-pack-marketing/server/api/plan-types"
-      description: "List plan types (GET) or create plan type (POST) [admin]"
-    - path: /api/marketing/plan-types/[id]
-      methods: [GET, PUT, DELETE]
-      handler: "@hit/feature-pack-marketing/server/api/plan-types-id"
-      description: "Get, update, or delete a plan type [admin]"
-    - path: /api/marketing/activity-types
-      methods: [GET, POST]
-      handler: "@hit/feature-pack-marketing/server/api/activity-types"
-      description: "List activity types (GET) or create activity type (POST) [admin]"
-    - path: /api/marketing/activity-types/[id]
-      methods: [GET, PUT, DELETE]
-      handler: "@hit/feature-pack-marketing/server/api/activity-types-id"
-      description: "Get, update, or delete an activity type [admin]"
     - path: /api/marketing/links
       methods: [GET, POST, DELETE]
       handler: "@hit/feature-pack-marketing/server/api/links"
