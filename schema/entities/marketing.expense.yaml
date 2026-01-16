@@ -25,6 +25,9 @@ entities:
         deleteConfirmTitle: Delete Expense
         deleteConfirmBody: Are you sure you want to delete this expense? This action cannot be undone.
 
+    api:
+      resource: expenses
+
     # Schema-driven page security (source of truth for EntityList/Detail/Edit pages).
     security:
       list:
