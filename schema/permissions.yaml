@@ -1,0 +1,193 @@
+permissions:
+  actions:
+    # Marketing Setup pages (per-page toggles; no LDD; simple on/off).
+    - key: marketing.setup.plan-types.access
+      label: "Marketing Setup: Plan Types"
+      description: "Access marketing setup: manage plan types."
+      default_enabled: false
+    - key: marketing.setup.activity-types.access
+      label: "Marketing Setup: Activity Types"
+      description: "Access marketing setup: manage activity types."
+      default_enabled: false
+
+    # Scope Policy Tree: Marketing (global) -> entity overrides.
+    #
+    # Scope modes:
+    # - none: deny all access for this verb/entity (hide pages + block APIs)
+    # - all: ignore scope (read everything)
+    # - own: only owned records (based on createdBy for expenses, or plan's createdBy for plans)
+    #
+    # These are mutually exclusive per node; the Security Groups UI renders them as dropdowns.
+    - key: marketing.read.scope.none
+      label: "Marketing Read Scope = None"
+      description: "Deny all marketing read access."
+      default_enabled: false
+    - key: marketing.read.scope.all
+      label: "Marketing Read Scope = All"
+      description: "Read all marketing entities regardless of ownership."
+      default_enabled: false
+    - key: marketing.read.scope.own
+      label: "Marketing Read Scope = Own"
+      description: "Read only marketing entities you created."
+      default_enabled: false
+
+    - key: marketing.write.scope.none
+      label: "Marketing Write Scope = None"
+      description: "Deny all marketing write access."
+      default_enabled: false
+    - key: marketing.write.scope.all
+      label: "Marketing Write Scope = All"
+      description: "Edit marketing entities regardless of ownership."
+      default_enabled: false
+    - key: marketing.write.scope.own
+      label: "Marketing Write Scope = Own"
+      description: "Edit only marketing entities you created."
+      default_enabled: false
+
+    - key: marketing.delete.scope.none
+      label: "Marketing Delete Scope = None"
+      description: "Deny all marketing delete access."
+      default_enabled: false
+    - key: marketing.delete.scope.all
+      label: "Marketing Delete Scope = All"
+      description: "Delete marketing entities regardless of ownership."
+      default_enabled: false
+    - key: marketing.delete.scope.own
+      label: "Marketing Delete Scope = Own"
+      description: "Delete only marketing entities you created."
+      default_enabled: false
+
+    # Plans override
+    - key: marketing.plans.read.scope.none
+      label: "Marketing Plans Read Scope = None"
+      description: "Deny all plan read access."
+      default_enabled: false
+    - key: marketing.plans.read.scope.all
+      label: "Marketing Plans Read Scope = All"
+      description: "Read plans regardless of ownership."
+      default_enabled: false
+    - key: marketing.plans.read.scope.own
+      label: "Marketing Plans Read Scope = Own"
+      description: "Read only plans you created."
+      default_enabled: false
+
+    - key: marketing.plans.write.scope.none
+      label: "Marketing Plans Write Scope = None"
+      description: "Deny all plan write access."
+      default_enabled: false
+    - key: marketing.plans.write.scope.all
+      label: "Marketing Plans Write Scope = All"
+      description: "Edit plans regardless of ownership."
+      default_enabled: false
+    - key: marketing.plans.write.scope.own
+      label: "Marketing Plans Write Scope = Own"
+      description: "Edit only plans you created."
+      default_enabled: false
+
+    - key: marketing.plans.delete.scope.none
+      label: "Marketing Plans Delete Scope = None"
+      description: "Deny all plan delete access."
+      default_enabled: false
+    - key: marketing.plans.delete.scope.all
+      label: "Marketing Plans Delete Scope = All"
+      description: "Delete plans regardless of ownership."
+      default_enabled: false
+    - key: marketing.plans.delete.scope.own
+      label: "Marketing Plans Delete Scope = Own"
+      description: "Delete only plans you created."
+      default_enabled: false
+
+    - key: marketing.plans.create
+      label: Create Plan
+      description: "Create a new marketing plan."
+      default_enabled: true
+
+    # Expenses override
+    - key: marketing.expenses.read.scope.none
+      label: "Marketing Expenses Read Scope = None"
+      description: "Deny all expense read access."
+      default_enabled: false
+    - key: marketing.expenses.read.scope.all
+      label: "Marketing Expenses Read Scope = All"
+      description: "Read expenses regardless of ownership."
+      default_enabled: false
+    - key: marketing.expenses.read.scope.own
+      label: "Marketing Expenses Read Scope = Own"
+      description: "Read only expenses you created."
+      default_enabled: false
+
+    - key: marketing.expenses.write.scope.none
+      label: "Marketing Expenses Write Scope = None"
+      description: "Deny all expense write access."
+      default_enabled: false
+    - key: marketing.expenses.write.scope.all
+      label: "Marketing Expenses Write Scope = All"
+      description: "Edit expenses regardless of ownership."
+      default_enabled: false
+    - key: marketing.expenses.write.scope.own
+      label: "Marketing Expenses Write Scope = Own"
+      description: "Edit only expenses you created."
+      default_enabled: false
+
+    - key: marketing.expenses.delete.scope.none
+      label: "Marketing Expenses Delete Scope = None"
+      description: "Deny all expense delete access."
+      default_enabled: false
+    - key: marketing.expenses.delete.scope.all
+      label: "Marketing Expenses Delete Scope = All"
+      description: "Delete expenses regardless of ownership."
+      default_enabled: false
+    - key: marketing.expenses.delete.scope.own
+      label: "Marketing Expenses Delete Scope = Own"
+      description: "Delete only expenses you created."
+      default_enabled: false
+
+    - key: marketing.expenses.create
+      label: Create Expense
+      description: "Create a new marketing expense."
+      default_enabled: true
+
+    # Vendors override
+    - key: marketing.vendors.read.scope.none
+      label: "Marketing Vendors Read Scope = None"
+      description: "Deny all vendor read access."
+      default_enabled: false
+    - key: marketing.vendors.read.scope.all
+      label: "Marketing Vendors Read Scope = All"
+      description: "Read vendors regardless of ownership."
+      default_enabled: false
+    - key: marketing.vendors.read.scope.own
+      label: "Marketing Vendors Read Scope = Own"
+      description: "Read only vendors you created."
+      default_enabled: false
+
+    - key: marketing.vendors.write.scope.none
+      label: "Marketing Vendors Write Scope = None"
+      description: "Deny all vendor write access."
+      default_enabled: false
+    - key: marketing.vendors.write.scope.all
+      label: "Marketing Vendors Write Scope = All"
+      description: "Edit vendors regardless of ownership."
+      default_enabled: false
+    - key: marketing.vendors.write.scope.own
+      label: "Marketing Vendors Write Scope = Own"
+      description: "Edit only vendors you created."
+      default_enabled: false
+
+    - key: marketing.vendors.delete.scope.none
+      label: "Marketing Vendors Delete Scope = None"
+      description: "Deny all vendor delete access."
+      default_enabled: false
+    - key: marketing.vendors.delete.scope.all
+      label: "Marketing Vendors Delete Scope = All"
+      description: "Delete vendors regardless of ownership."
+      default_enabled: false
+    - key: marketing.vendors.delete.scope.own
+      label: "Marketing Vendors Delete Scope = Own"
+      description: "Delete only vendors you created."
+      default_enabled: false
+
+    - key: marketing.vendors.create
+      label: Create Vendor
+      description: "Create a new marketing vendor."
+      default_enabled: true
