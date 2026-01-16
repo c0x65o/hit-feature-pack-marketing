@@ -197,3 +197,128 @@ export type InsertMarketingPlanTypeBudget = InferInsertModel<typeof marketingPla
 
 export type MarketingEntityLink = InferSelectModel<typeof marketingEntityLinks>;
 export type InsertMarketingEntityLink = InferInsertModel<typeof marketingEntityLinks>;
+
+/**
+ * Default Marketing plan types
+ * Seeded via API initialization (when the table is empty).
+ */
+export const DEFAULT_MARKETING_PLAN_TYPES: Omit<
+  InsertMarketingPlanType,
+  'id' | 'createdAt' | 'updatedAt'
+>[] = [
+  {
+    key: 'paid_ads',
+    name: 'Paid Ads',
+    description: 'Paid advertising campaigns (search, display, paid social, etc.)',
+    color: '#3b82f6',
+    icon: 'megaphone',
+    sortOrder: '10',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'social_media',
+    name: 'Social Media Campaign',
+    description: 'Organic or boosted social campaigns and content pushes',
+    color: '#8b5cf6',
+    icon: 'share-2',
+    sortOrder: '20',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'influencer',
+    name: 'Influencer Partnership',
+    description: 'Creator/influencer partnerships and sponsored content',
+    color: '#ec4899',
+    icon: 'users',
+    sortOrder: '30',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'pr',
+    name: 'PR / Press',
+    description: 'PR outreach, press kits, announcements, and media relations',
+    color: '#06b6d4',
+    icon: 'file-text',
+    sortOrder: '40',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'events',
+    name: 'Events',
+    description: 'Conferences, showcases, conventions, and event activations',
+    color: '#f59e0b',
+    icon: 'calendar',
+    sortOrder: '50',
+    isSystem: true,
+    isActive: true,
+  },
+];
+
+/**
+ * Default Marketing activity types
+ * Seeded via API initialization (when the table is empty).
+ */
+export const DEFAULT_MARKETING_ACTIVITY_TYPES: Omit<
+  InsertMarketingActivityType,
+  'id' | 'createdAt' | 'updatedAt'
+>[] = [
+  {
+    key: 'launch',
+    name: 'Launch',
+    category: 'release',
+    description: 'Launch milestone (announcement, release, or major reveal)',
+    color: '#10b981',
+    icon: 'rocket',
+    sortOrder: '10',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'sale',
+    name: 'Sale / Discount',
+    category: 'marketing',
+    description: 'Sale or discount campaign period',
+    color: '#f59e0b',
+    icon: 'tag',
+    sortOrder: '20',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'video_drop',
+    name: 'Video Drop',
+    category: 'content',
+    description: 'Video content release (trailer, gameplay, devlog, etc.)',
+    color: '#3b82f6',
+    icon: 'video',
+    sortOrder: '30',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'press_release',
+    name: 'Press Release',
+    category: 'marketing',
+    description: 'Press release or major announcement distribution',
+    color: '#06b6d4',
+    icon: 'file-text',
+    sortOrder: '40',
+    isSystem: true,
+    isActive: true,
+  },
+  {
+    key: 'event_participation',
+    name: 'Event Participation',
+    category: 'marketing',
+    description: 'Participation in an event, convention, showcase, or festival',
+    color: '#ec4899',
+    icon: 'calendar',
+    sortOrder: '50',
+    isSystem: true,
+    isActive: true,
+  },
+];

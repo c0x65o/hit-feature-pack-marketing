@@ -1289,4 +1289,14 @@ export type MarketingPlanTypeBudget = InferSelectModel<typeof marketingPlanTypeB
 export type InsertMarketingPlanTypeBudget = InferInsertModel<typeof marketingPlanTypeBudgets>;
 export type MarketingEntityLink = InferSelectModel<typeof marketingEntityLinks>;
 export type InsertMarketingEntityLink = InferInsertModel<typeof marketingEntityLinks>;
+/**
+ * Default Marketing plan types
+ * Seeded via API initialization (when the table is empty).
+ */
+export declare const DEFAULT_MARKETING_PLAN_TYPES: Omit<InsertMarketingPlanType, 'id' | 'createdAt' | 'updatedAt'>[];
+/**
+ * Default Marketing activity types
+ * Seeded via API initialization (when the table is empty).
+ */
+export declare const DEFAULT_MARKETING_ACTIVITY_TYPES: Omit<InsertMarketingActivityType, 'id' | 'createdAt' | 'updatedAt'>[];
 //# sourceMappingURL=marketing.d.ts.map

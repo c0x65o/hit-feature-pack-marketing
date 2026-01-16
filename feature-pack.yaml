@@ -159,6 +159,8 @@ schema:
     - InsertMarketingPlanTypeBudget
     - MarketingEntityLink
     - InsertMarketingEntityLink
+    - DEFAULT_MARKETING_PLAN_TYPES
+    - DEFAULT_MARKETING_ACTIVITY_TYPES
 
 # ─────────────────────────────────────────────────────────────────────────────
 # API ROUTES - Backend endpoints

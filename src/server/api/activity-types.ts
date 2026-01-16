@@ -6,7 +6,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { marketingActivityTypes } from '@/lib/feature-pack-schemas';
+import { DEFAULT_MARKETING_ACTIVITY_TYPES, marketingActivityTypes } from '@/lib/feature-pack-schemas';
 import { and, asc, eq, like, or, sql } from 'drizzle-orm';
 import { extractUserFromRequest, isAdmin } from '../auth';
 import { randomUUID } from 'crypto';
@@ -14,9 +14,44 @@ import { randomUUID } from 'crypto';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+async function ensureSeeded(db: any) {
+  const [{ count }] =
+    (await db
+      .select({ count: sql<number>`count(*)` })
+      .from(marketingActivityTypes)
+      .limit(1)) || [];
+
+  if (Number(count || 0) > 0) return;
+
+  const now = new Date();
+  const rows = (DEFAULT_MARKETING_ACTIVITY_TYPES as any[]).map((t) => ({
+    id: randomUUID(),
+    key: t.key,
+    name: t.name,
+    category: t.category ?? null,
+    description: t.description ?? null,
+    color: t.color ?? null,
+    icon: t.icon ?? null,
+    sortOrder: t.sortOrder ?? '0',
+    isSystem: true,
+    isActive: t.isActive ?? true,
+    createdAt: now,
+    updatedAt: now,
+  }));
+
+  try {
+    await db.insert(marketingActivityTypes).values(rows);
+  } catch (error: any) {
+    // Best-effort: avoid failing the request on concurrent seed races.
+    if (error?.code === '23505' || error?.message?.includes('unique')) return;
+    throw error;
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const db = getDb();
+    await ensureSeeded(db);
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('activeOnly') !== 'false';
     const category = searchParams.get('category');
@@ -57,6 +92,11 @@ export async function POST(request: NextRequest) {
     const db = getDb();
     const body = await request.json();
     const { key, name, category, description, color, icon } = body || {};
+
+    // Prevent clients from creating "system" types via API.
+    if (body?.isSystem !== undefined) {
+      return NextResponse.json({ error: 'isSystem cannot be set via API' }, { status: 400 });
+    }
 
     if (!key?.trim()) return NextResponse.json({ error: 'key is required' }, { status: 400 });
     if (!name?.trim()) return NextResponse.json({ error: 'name is required' }, { status: 400 });
