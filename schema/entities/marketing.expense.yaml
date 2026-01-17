@@ -59,14 +59,12 @@ entities:
         vendorName: true
         typeName: true
         amount: true
-        notes: true
       columns:
         - occurredAt
         - planTitle
         - vendorName
         - typeName
         - amount
-        - notes
 
     fields:
       id: { type: text, label: ID }

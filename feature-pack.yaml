@@ -171,23 +171,6 @@ api:
       methods: [GET]
       handler: "@hit/feature-pack-marketing/server/api/summary"
       description: "Marketing dashboard summary (month, YTD, breakdowns)"
-    # Setup entities - use pack-owned handlers so we can ensure defaults are seeded when empty.
-    - path: /api/marketing/plan-types
-      methods: [GET, POST]
-      handler: "@hit/feature-pack-marketing/server/api/plan-types"
-      description: "List plan types (GET) or create a plan type (POST)"
-    - path: /api/marketing/plan-types/[id]
-      methods: [GET, PUT, DELETE]
-      handler: "@hit/feature-pack-marketing/server/api/plan-types-id"
-      description: "Get/update/delete a plan type"
-    - path: /api/marketing/activity-types
-      methods: [GET, POST]
-      handler: "@hit/feature-pack-marketing/server/api/activity-types"
-      description: "List activity types (GET) or create an activity type (POST)"
-    - path: /api/marketing/activity-types/[id]
-      methods: [GET, PUT, DELETE]
-      handler: "@hit/feature-pack-marketing/server/api/activity-types-id"
-      description: "Get/update/delete an activity type"
     - path: /api/marketing/plans
       methods: [GET, POST]
       handler: "@hit/feature-pack-marketing/server/api/plans"
