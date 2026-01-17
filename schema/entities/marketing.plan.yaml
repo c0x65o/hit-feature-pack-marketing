@@ -55,9 +55,7 @@ entities:
       defaultVisibleOnly: true
       initialColumnVisibility:
         title: true
-        typeName: true
         budgetAmount: true
-        monthSpendAmount: true
         isArchived: true
         startDate: false
         endDate: false
@@ -65,9 +63,7 @@ entities:
         updatedAt: false
       columns:
         - title
-        - typeName
         - budgetAmount
-        - monthSpendAmount
         - isArchived
         - startDate
         - endDate

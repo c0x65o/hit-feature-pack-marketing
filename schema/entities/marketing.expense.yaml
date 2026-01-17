@@ -55,15 +55,9 @@ entities:
       defaultVisibleOnly: true
       initialColumnVisibility:
         occurredAt: true
-        planTitle: true
-        vendorName: true
-        typeName: true
         amount: true
       columns:
         - occurredAt
-        - planTitle
-        - vendorName
-        - typeName
         - amount
 
     fields:
