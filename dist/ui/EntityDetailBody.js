@@ -48,6 +48,37 @@ function formatLocalDateTime(value) {
         return d.toLocaleString();
     }
 }
+function formatDuration(value, unit) {
+    if (value == null || value === '')
+        return null;
+    const n = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(n))
+        return null;
+    const ms = unit === 's' ? n * 1000 : n;
+    if (ms === 0)
+        return '0s';
+    const absMs = Math.abs(ms);
+    const sign = ms < 0 ? '-' : '';
+    const units = [
+        { label: 'd', ms: 86400000 },
+        { label: 'h', ms: 3600000 },
+        { label: 'm', ms: 60000 },
+        { label: 's', ms: 1000 },
+        { label: 'ms', ms: 1 },
+    ];
+    const parts = [];
+    let remaining = absMs;
+    for (const u of units) {
+        if (remaining >= u.ms) {
+            const count = Math.floor(remaining / u.ms);
+            remaining = remaining % u.ms;
+            parts.push(`${count}${u.label}`);
+            if (parts.length >= 2)
+                break;
+        }
+    }
+    return parts.length > 0 ? sign + parts.join(' ') : '0s';
+}
 function getDefaultSummaryFields(uiSpec) {
     const fields = asRecord(uiSpec?.fields);
     const keys = Object.keys(fields);
@@ -86,6 +117,9 @@ function DetailField({ uiSpec, record, fieldKey, selectOptionsBySource, }) {
         else {
             value = raw == null ? null : String(raw);
         }
+    }
+    else if (type === 'duration') {
+        value = formatDuration(raw, spec.unit);
     }
     else if (type === 'select') {
         const optionSource = String(spec.optionSource || '').trim();
