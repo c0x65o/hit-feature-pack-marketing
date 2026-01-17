@@ -191,13 +191,19 @@ export function EntityListPage({
     return vis;
   }, [listSpec.initialColumnVisibility, (listSpec as any).defaultVisibleOnly, columns]);
 
+  // When using router.push() (via onNavigate), do NOT pre-encode the URL because
+  // Next.js handles encoding for dynamic route segments. Pre-encoding causes double-encoding
+  // (e.g., @ -> %40 -> %2540). Only encode when using window.location.href directly.
   const navigate = (path: string) => {
     if (onNavigate) onNavigate(path);
     else if (typeof window !== 'undefined') window.location.href = path;
   };
 
   const newHref = String(routes.new || `/${entityKey}/new`);
-  const detailHref = (id: string) => String(routes.detail || `/${entityKey}/{id}`).replace('{id}', encodeURIComponent(id));
+  const detailHref = (id: string) => {
+    const tpl = String(routes.detail || `/${entityKey}/{id}`);
+    return tpl.replace('{id}', onNavigate ? id : encodeURIComponent(id));
+  };
 
   const handleDelete = async () => {
     if (!deleteConfirm || !deleteItem) return;

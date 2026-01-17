@@ -55,8 +55,13 @@ export function EntityUpsertPage({
   const actionsMeta: any = meta?.actions || {};
 
   const listHref = String(routes.list || '/');
-  const detailHref = (rid: string) =>
-    String(routes.detail || '/{id}').replace('{id}', encodeURIComponent(rid));
+  // When using router.push() (via onNavigate), do NOT pre-encode the URL because
+  // Next.js handles encoding for dynamic route segments. Pre-encoding causes double-encoding
+  // (e.g., @ -> %40 -> %2540). Only encode when using window.location.href directly.
+  const detailHref = (rid: string) => {
+    const tpl = String(routes.detail || '/{id}');
+    return tpl.replace('{id}', onNavigate ? rid : encodeURIComponent(rid));
+  };
 
   const navigate = (path: string) => {
     if (onNavigate) onNavigate(path);
