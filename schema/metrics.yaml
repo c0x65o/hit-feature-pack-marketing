@@ -1,0 +1,226 @@
+version: 1
+
+# Marketing Metrics Definitions
+#
+# This file defines all metrics provided by the Marketing feature pack.
+# Metrics are used in dashboards and reports to track marketing performance.
+metrics:
+  # ============================================================================
+  # CAMPAIGN CORE METRICS
+  # ============================================================================
+
+  fp.marketing.campaigns_count:
+    key: fp.marketing.campaigns_count
+    label: Campaigns
+    description: Total campaign count (snapshot).
+    unit: count
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: Megaphone
+    icon_color: "#6366f1"
+    default_roles_allow: [admin]
+
+  fp.marketing.campaigns_active_count:
+    key: fp.marketing.campaigns_active_count
+    label: Active Campaigns
+    description: Count of campaigns with status 'active'.
+    unit: count
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: Megaphone
+    icon_color: "#22c55e"
+    default_roles_allow: [admin]
+
+  fp.marketing.campaigns_budget_total_usd:
+    key: fp.marketing.campaigns_budget_total_usd
+    label: Total Campaign Budget
+    description: Sum of budgetAmount across all campaigns.
+    unit: usd
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: DollarSign
+    icon_color: "#f59e0b"
+    default_roles_allow: [admin]
+
+  # ============================================================================
+  # CAMPAIGN ROI & ATTRIBUTION METRICS
+  # ============================================================================
+
+  fp.marketing.campaign_roi_percent:
+    key: fp.marketing.campaign_roi_percent
+    label: Campaign ROI
+    description: Return on investment for campaigns (won value / budget).
+    unit: percent
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: TrendingUp
+    icon_color: "#22c55e"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_id:
+        required: false
+      campaign_name:
+        required: false
+
+  fp.marketing.campaign_prospects_count:
+    key: fp.marketing.campaign_prospects_count
+    label: Campaign Prospects
+    description: Count of prospects attributed to each campaign.
+    unit: count
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: Users
+    icon_color: "#2563eb"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_id:
+        required: true
+      campaign_name:
+        required: false
+
+  fp.marketing.campaign_opportunities_count:
+    key: fp.marketing.campaign_opportunities_count
+    label: Campaign Opportunities
+    description: Count of opportunities attributed to each campaign.
+    unit: count
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: Target
+    icon_color: "#a855f7"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_id:
+        required: true
+      campaign_name:
+        required: false
+
+  fp.marketing.campaign_opportunities_value_usd:
+    key: fp.marketing.campaign_opportunities_value_usd
+    label: Campaign Pipeline Value
+    description: Sum of opportunity amount attributed to each campaign.
+    unit: usd
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: DollarSign
+    icon_color: "#f59e0b"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_id:
+        required: true
+      campaign_name:
+        required: false
+
+  fp.marketing.campaign_won_value_usd:
+    key: fp.marketing.campaign_won_value_usd
+    label: Campaign Won Value
+    description: Sum of closed-won opportunity amount attributed to each campaign.
+    unit: usd
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: BadgeCheck
+    icon_color: "#22c55e"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_id:
+        required: true
+      campaign_name:
+        required: false
+
+  # ============================================================================
+  # CAMPAIGN BY TYPE METRICS
+  # ============================================================================
+
+  fp.marketing.campaigns_by_type_count:
+    key: fp.marketing.campaigns_by_type_count
+    label: Campaigns by Type (Count)
+    description: Campaign count grouped by campaign type.
+    unit: count
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: PieChart
+    icon_color: "#6366f1"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_type_id:
+        required: false
+      campaign_type_name:
+        required: false
+      campaign_type_code:
+        required: false
+
+  fp.marketing.campaigns_by_type_budget_usd:
+    key: fp.marketing.campaigns_by_type_budget_usd
+    label: Campaigns by Type (Budget)
+    description: Sum of campaign budget grouped by campaign type.
+    unit: usd
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: DollarSign
+    icon_color: "#f59e0b"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_type_id:
+        required: false
+      campaign_type_name:
+        required: false
+      campaign_type_code:
+        required: false
+
+  # ============================================================================
+  # CAMPAIGN TIMELINE METRICS (for Sunrise/Sunset arc widget)
+  # ============================================================================
+
+  fp.marketing.campaign_progress:
+    key: fp.marketing.campaign_progress
+    label: Campaign Progress
+    description: Progress through campaign duration (for arc visualization).
+    unit: percent
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: Calendar
+    icon_color: "#6366f1"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      campaign_id:
+        required: true
+      campaign_name:
+        required: false
+      start_date:
+        required: false
+      end_date:
+        required: false
+      days_elapsed:
+        required: false
+      days_remaining:
+        required: false
+    # Widget hint: Sunrise/Sunset arc (start → current position → end)
+
+  # ============================================================================
+  # CAMPAIGN STATUS METRICS
+  # ============================================================================
+
+  fp.marketing.campaigns_by_status_count:
+    key: fp.marketing.campaigns_by_status_count
+    label: Campaigns by Status
+    description: Campaign count grouped by status (planned, active, paused, completed, cancelled).
+    unit: count
+    rollup_strategy: last
+    time_kind: none
+    entity_kinds: [marketing]
+    icon: PieChart
+    icon_color: "#6366f1"
+    default_roles_allow: [admin]
+    dimensions_schema:
+      status:
+        required: true

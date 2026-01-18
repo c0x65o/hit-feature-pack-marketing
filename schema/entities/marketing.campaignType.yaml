@@ -1,0 +1,112 @@
+version: 1
+
+entities:
+  marketing.campaignType:
+    meta:
+      titleSingular: Campaign Type
+      titlePlural: Campaign Types
+      descriptionPlural: Configure the types of marketing campaigns
+      routes:
+        root: /marketing
+        list: /marketing/setup/campaign-types
+        new: /marketing/setup/campaign-types/new
+        detail: /marketing/setup/campaign-types/{id}
+        edit: /marketing/setup/campaign-types/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Setup, href: /marketing/setup/campaign-types }
+      actions:
+        createLabel: New Campaign Type
+        editLabel: Edit Campaign Type
+        saveCreateLabel: Create Campaign Type
+        saveUpdateLabel: Update Campaign Type
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Campaign Type
+        deleteConfirmBody: Are you sure you want to delete "{name}"? This action cannot be undone.
+
+    # Schema-driven page security (source of truth for EntityList/Detail/Edit pages).
+    security:
+      list:
+        roles: []
+        authz: { entity: setup, verb: read, require_action: marketing.setup.campaign-types.access, show_pages: true }
+      detail:
+        roles: []
+        authz: { entity: setup, verb: read, require_action: marketing.setup.campaign-types.access, show_pages: true }
+      new:
+        roles: []
+        authz: { entity: setup, verb: read, require_action: marketing.setup.campaign-types.access, show_pages: true }
+      edit:
+        roles: []
+        authz: { entity: setup, verb: read, require_action: marketing.setup.campaign-types.access, show_pages: true }
+
+    api:
+      resource: campaign-types
+
+    storage:
+      drizzleTable: marketingCampaignTypes
+
+    list:
+      tableId: marketing.campaignTypes
+      uiStateVersion: 1
+      pageSize: 50
+      initialSort: { sortBy: order, sortOrder: asc }
+      sortWhitelist: [order, name, code, createdOnTimestamp]
+      reorder:
+        enabled: true
+        endpoint: /api/marketing/campaign-types/reorder
+        bodyKey: types
+        idField: id
+        orderField: order
+        labelField: name
+        secondaryFields: [code]
+        showColor: true
+        colorField: color
+      defaultVisibleOnly: true
+      initialColumnVisibility:
+        name: true
+        code: true
+        order: true
+        isSystem: false
+        createdOnTimestamp: false
+        lastUpdatedOnTimestamp: false
+      columns:
+        - name
+        - code
+        - order
+        - isSystem
+        - createdOnTimestamp
+        - lastUpdatedOnTimestamp
+
+    fields:
+      id: { type: text, label: ID, readOnly: true }
+      code: { type: text, label: Code, required: true }
+      name: { type: text, label: Name, required: true }
+      color: { type: color, label: Color, platforms: [web] }
+      order: { type: number, label: Order, required: true }
+      isSystem: { type: boolean, label: System, readOnly: true }
+      customerConfig: { type: textarea, label: Customer Config (JSON) }
+      createdByUserId: { type: text, label: Created By, readOnly: true }
+      createdOnTimestamp: { type: datetime, label: Created, readOnly: true }
+      lastUpdatedByUserId: { type: text, label: Updated By, readOnly: true }
+      lastUpdatedOnTimestamp: { type: datetime, label: Updated, readOnly: true }
+
+    form:
+      sections:
+        - id: basic
+          title: Campaign Type
+          layout: { columns: 2 }
+          fields: [name, code, order, color]
+
+    # Default seed data for new tenants
+    seedData:
+      - { code: email, name: Email Campaign, order: 1 }
+      - { code: webinar, name: Webinar, order: 2 }
+      - { code: event, name: Event / Trade Show, order: 3 }
+      - { code: content, name: Content Marketing, order: 4 }
+      - { code: paid_search, name: Paid Search (PPC), order: 5 }
+      - { code: paid_social, name: Paid Social, order: 6 }
+      - { code: organic_social, name: Organic Social, order: 7 }
+      - { code: referral, name: Referral Program, order: 8 }
+      - { code: direct_mail, name: Direct Mail, order: 9 }
+      - { code: other, name: Other, order: 10 }

@@ -73,6 +73,34 @@ routes:
     page: EntityEdit
     params: { entityKey: marketing.activityType }
 
+  # Campaigns
+  - path: /marketing/campaigns
+    page: EntityList
+    params: { entityKey: marketing.campaign }
+  - path: /marketing/campaigns/new
+    page: EntityEdit
+    params: { entityKey: marketing.campaign }
+  - path: /marketing/campaigns/[id]
+    page: EntityDetail
+    params: { entityKey: marketing.campaign }
+  - path: /marketing/campaigns/[id]/edit
+    page: EntityEdit
+    params: { entityKey: marketing.campaign }
+
+  # Campaign Types (setup)
+  - path: /marketing/setup/campaign-types
+    page: EntityReorderList
+    params: { entityKey: marketing.campaignType }
+  - path: /marketing/setup/campaign-types/new
+    page: EntityEdit
+    params: { entityKey: marketing.campaignType }
+  - path: /marketing/setup/campaign-types/[id]
+    page: EntityDetail
+    params: { entityKey: marketing.campaignType }
+  - path: /marketing/setup/campaign-types/[id]/edit
+    page: EntityEdit
+    params: { entityKey: marketing.campaignType }
+
 # ─────────────────────────────────────────────────────────────────────────────
 # NAVIGATION - Sidebar/topbar items
 # ─────────────────────────────────────────────────────────────────────────────
@@ -109,6 +137,12 @@ nav:
         icon: Store
         weight: 400
         showWhen: authenticated
+      - id: marketing-campaigns
+        label: Campaigns
+        path: /marketing/campaigns
+        icon: Megaphone
+        weight: 500
+        showWhen: authenticated
       - id: marketing-setup
         label: Setup
         path: ""
@@ -129,6 +163,13 @@ nav:
             path: /marketing/setup/activity-types
             icon: List
             weight: 200
+            showWhen: authenticated
+            roles: [admin]
+          - id: marketing-setup-campaign-types
+            label: Campaign Types
+            path: /marketing/setup/campaign-types
+            icon: Megaphone
+            weight: 300
             showWhen: authenticated
             roles: [admin]
 
@@ -159,8 +200,17 @@ schema:
     - InsertMarketingPlanTypeBudget
     - MarketingEntityLink
     - InsertMarketingEntityLink
+    - marketingCampaigns
+    - marketingCampaignsRelations
+    - marketingCampaignTypes
+    - marketingCampaignTypesRelations
+    - MarketingCampaign
+    - InsertMarketingCampaign
+    - MarketingCampaignType
+    - InsertMarketingCampaignType
     - DEFAULT_MARKETING_PLAN_TYPES
     - DEFAULT_MARKETING_ACTIVITY_TYPES
+    - DEFAULT_MARKETING_CAMPAIGN_TYPES
 
 # ─────────────────────────────────────────────────────────────────────────────
 # API ROUTES - Backend endpoints
@@ -203,6 +253,22 @@ api:
       methods: [GET, POST, DELETE]
       handler: "@hit/feature-pack-marketing/server/api/links"
       description: "Optional entity linking (gated behind enable_project_linking)"
+
+    # Campaigns
+    - path: /api/marketing/campaigns
+      methods: [GET, POST]
+      handler: "@hit/feature-pack-marketing/server/api/campaigns"
+      description: "List campaigns (GET) or create campaign (POST)"
+    - path: /api/marketing/campaigns/[id]
+      methods: [GET, PUT, DELETE]
+      handler: "@hit/feature-pack-marketing/server/api/campaigns-id"
+      description: "Get, update, or delete a specific campaign"
+
+    # Campaign Types reorder
+    - path: /api/marketing/campaign-types/reorder
+      methods: [PUT]
+      handler: "@hit/feature-pack-marketing/server/api/campaign-types-reorder"
+      description: "Reorder campaign types"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PERMISSIONS - Entity+Verb permissions model

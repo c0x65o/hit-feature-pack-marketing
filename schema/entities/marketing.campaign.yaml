@@ -1,0 +1,183 @@
+version: 1
+
+entities:
+  marketing.campaign:
+    meta:
+      titleSingular: Campaign
+      titlePlural: Campaigns
+      descriptionPlural: Track marketing campaigns that drive leads
+      routes:
+        root: /marketing
+        list: /marketing/campaigns
+        new: /marketing/campaigns/new
+        detail: /marketing/campaigns/{id}
+        edit: /marketing/campaigns/{id}/edit
+      breadcrumbs:
+        - { label: Marketing, href: /marketing }
+        - { label: Campaigns, href: /marketing/campaigns }
+      actions:
+        createLabel: New Campaign
+        editLabel: Edit Campaign
+        saveCreateLabel: Create Campaign
+        saveUpdateLabel: Update Campaign
+        cancelLabel: Cancel
+        deleteLabel: Delete
+        deleteConfirmTitle: Delete Campaign
+        deleteConfirmBody: Are you sure you want to delete "{name}"? This action cannot be undone.
+
+    # Schema-driven page security (source of truth for EntityList/Detail/Edit pages).
+    security:
+      list:
+        roles: []
+        authz: { entity: campaigns, verb: read }
+      detail:
+        roles: []
+        authz: { entity: campaigns, verb: read }
+      new:
+        roles: []
+        authz: { entity: campaigns, verb: write, require_create: true }
+      edit:
+        roles: []
+        authz: { entity: campaigns, verb: write }
+      delete:
+        roles: []
+        authz: { entity: campaigns, verb: delete }
+
+    api:
+      resource: campaigns
+
+    storage:
+      drizzleTable: marketingCampaigns
+
+    ldd:
+      enabled: true
+      scopesOnly: true
+      fields:
+        divisionId: divisionId
+        departmentId: departmentId
+        locationId: locationId
+      form:
+        title: "Org Scope"
+        position: end
+        columns: 3
+      extraScopes:
+        enabled: true
+        title: "Additional Scopes"
+        position: end
+
+    list:
+      tableId: marketing.campaigns
+      platforms: [web, mobile]
+      uiStateVersion: 1
+      defaultVisibleOnly: true
+      pageSize: 25
+      initialSort:
+        sortBy: startDate
+        sortOrder: desc
+      sortWhitelist:
+        - name
+        - startDate
+        - endDate
+        - status
+        - budgetAmount
+        - createdOnTimestamp
+        - lastUpdatedOnTimestamp
+        - id
+      initialColumnVisibility:
+        name: true
+        campaignTypeId: true
+        status: true
+        startDate: true
+        endDate: true
+        budgetAmount: false
+        ownerUserId: false
+        createdOnTimestamp: false
+        lastUpdatedOnTimestamp: false
+      initialSorting:
+        - id: startDate
+          desc: true
+      columns:
+        - name
+        - key: campaignTypeId
+          reference:
+            entityType: marketing.campaignType
+            labelFromRow: campaignTypeName
+        - status
+        - startDate
+        - endDate
+        - budgetAmount
+        - ownerUserId
+        - createdOnTimestamp
+        - lastUpdatedOnTimestamp
+        - key: actions
+          label: ""
+          sortable: false
+          hideable: false
+          align: right
+
+    form:
+      sections:
+        - id: basic
+          title: Campaign Information
+          layout: { columns: 2 }
+          fields: [name, campaignTypeId, status]
+        - id: schedule
+          title: Schedule & Budget
+          layout: { columns: 3 }
+          fields: [startDate, endDate, budgetAmount]
+        - id: details
+          title: Details
+          layout: { columns: 1 }
+          fields: [description, goals]
+
+    fields:
+      id: { type: text, label: ID }
+      name: { type: text, label: Campaign Name, required: true }
+      description: { type: textarea, label: Description, placeholder: "Describe the campaign objectives and strategy" }
+      goals: { type: textarea, label: Goals, placeholder: "What are the measurable goals?" }
+      campaignTypeId:
+        type: select
+        label: Campaign Type
+        optionSource: marketing.campaignTypes
+        labelFromRow: campaignTypeName
+      campaignTypeName: { type: text, label: Campaign Type, virtual: true }
+      status:
+        type: select
+        label: Status
+        required: true
+        options:
+          - { value: planned, label: Planned }
+          - { value: active, label: Active }
+          - { value: paused, label: Paused }
+          - { value: completed, label: Completed }
+          - { value: cancelled, label: Cancelled }
+        defaultFrom: { kind: literal, value: planned }
+      startDate: { type: date, label: Start Date }
+      endDate: { type: date, label: End Date }
+      budgetAmount: { type: number, label: Budget, placeholder: "0.00" }
+      divisionId:
+        type: select
+        label: Division
+        optionSource: org.divisions
+        defaultFrom: { kind: orgScopeFirst, path: divisionIds }
+        virtual: true
+      departmentId:
+        type: select
+        label: Department
+        optionSource: org.departments
+        defaultFrom: { kind: orgScopeFirst, path: departmentIds }
+        virtual: true
+      locationId:
+        type: select
+        label: Location
+        optionSource: org.locations
+        defaultFrom: { kind: orgScopeFirst, path: locationIds }
+        virtual: true
+      ownerUserId: { type: text, label: Owner }
+      createdByUserId: { type: text, label: Created By }
+      createdOnTimestamp: { type: datetime, label: Created }
+      lastUpdatedOnTimestamp: { type: datetime, label: Updated }
+
+    detail:
+      summaryTitle: Details
+      summaryFields: [campaignTypeName, status, startDate, endDate, budgetAmount, description, goals, ownerUserId, createdOnTimestamp, lastUpdatedOnTimestamp]
