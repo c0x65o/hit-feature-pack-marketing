@@ -74,14 +74,40 @@ entities:
       id: { type: text, label: ID }
       title: { type: text, label: Title, required: true }
       typeId: { type: select, label: Plan Type, optionSource: marketing.planTypes }
-      typeName: { type: text, label: Plan Type, virtual: true }
-      typeColor: { type: text, label: Plan Type Color, virtual: true }
+      typeName:
+        type: text
+        label: Plan Type
+        virtual: true
+        compute:
+          kind: labelFrom
+          sourceField: typeId
+      typeColor:
+        type: text
+        label: Plan Type Color
+        virtual: true
+        compute:
+          kind: runtime
 
       budgetAmount: { type: number, label: Budget (USD) }
       spendAmount: { type: number, label: Spend (USD) }
-      monthSpendAmount: { type: number, label: This Month (USD), virtual: true }
-      actualSpendAmount: { type: number, label: Actual (USD), virtual: true }
-      remainingAmount: { type: number, label: Remaining (USD), virtual: true }
+      monthSpendAmount:
+        type: number
+        label: This Month (USD)
+        virtual: true
+        compute:
+          kind: runtime
+      actualSpendAmount:
+        type: number
+        label: Actual (USD)
+        virtual: true
+        compute:
+          kind: runtime
+      remainingAmount:
+        type: number
+        label: Remaining (USD)
+        virtual: true
+        compute:
+          kind: runtime
 
       startDate: { type: date, label: Start Date }
       endDate: { type: date, label: End Date }

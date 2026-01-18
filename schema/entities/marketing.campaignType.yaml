@@ -42,6 +42,7 @@ entities:
 
     api:
       resource: campaign-types
+      baseUrl: /api/marketing/campaign-types
 
     storage:
       drizzleTable: marketingCampaignTypes

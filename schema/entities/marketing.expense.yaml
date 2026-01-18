@@ -68,15 +68,43 @@ entities:
       attachmentUrl: { type: text, label: Attachment URL }
 
       planId: { type: select, label: Plan, optionSource: marketing.plans }
-      planTitle: { type: text, label: Plan, virtual: true }
+      planTitle:
+        type: text
+        label: Plan
+        virtual: true
+        compute:
+          kind: labelFrom
+          sourceField: planId
 
       vendorId: { type: select, label: Vendor, optionSource: marketing.vendors }
-      vendorName: { type: text, label: Vendor, virtual: true }
-      vendorKind: { type: text, label: Vendor Kind, virtual: true }
+      vendorName:
+        type: text
+        label: Vendor
+        virtual: true
+        compute:
+          kind: labelFrom
+          sourceField: vendorId
+      vendorKind:
+        type: text
+        label: Vendor Kind
+        virtual: true
+        compute:
+          kind: runtime
 
       typeId: { type: select, label: Activity Type, optionSource: marketing.activityTypes }
-      typeName: { type: text, label: Activity Type, virtual: true }
-      typeColor: { type: text, label: Activity Type Color, virtual: true }
+      typeName:
+        type: text
+        label: Activity Type
+        virtual: true
+        compute:
+          kind: labelFrom
+          sourceField: typeId
+      typeColor:
+        type: text
+        label: Activity Type Color
+        virtual: true
+        compute:
+          kind: runtime
 
       createdBy: { type: text, label: Created By }
       createdAt: { type: datetime, label: Created }

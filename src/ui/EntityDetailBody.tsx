@@ -149,7 +149,7 @@ export function EntityDetailBody({
   uiSpec: any;
   record: any;
   navigate: (path: string) => void;
-}) {
+}): React.ReactElement {
   const { Card } = useUi();
   const dataSource = useEntityDataSource(entityKey);
   const registries = dataSource?.useFormRegistries ? dataSource.useFormRegistries() : null;
@@ -213,12 +213,16 @@ export function EntityDetailBody({
     </>
   );
 
-  return wrapWithLinkedEntityTabsIfConfigured({
-    linkedEntityTabs,
-    entityKey,
-    record,
-    navigate,
-    overview: inner,
-  });
+  return (
+    <>
+      {wrapWithLinkedEntityTabsIfConfigured({
+        linkedEntityTabs,
+        entityKey,
+        record,
+        navigate,
+        overview: inner,
+      })}
+    </>
+  );
 }
 

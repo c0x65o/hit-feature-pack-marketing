@@ -158,6 +158,7 @@ export function EntityListPage({
 
   const items = data?.items || [];
   const pagination = data?.pagination;
+  const serverGroupMeta = (data as any)?.groupMeta;
 
   const onRequestDelete = (args: { id: string; label: string }) => setDeleteConfirm(args);
 
@@ -250,6 +251,7 @@ export function EntityListPage({
           searchDebounceMs={400}
           tableId={tableId}
           uiStateKey={uiStateKey}
+          serverGroupMeta={serverGroupMeta || undefined}
           enableViews={true}
           showColumnVisibility={true}
           initialColumnVisibility={effectiveInitialColumnVisibility}

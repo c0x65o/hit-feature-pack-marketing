@@ -165,11 +165,11 @@ export function EntityDetailBody({ entityKey, uiSpec, record, navigate, }) {
                 }
                 return null;
             })] }));
-    return wrapWithLinkedEntityTabsIfConfigured({
-        linkedEntityTabs,
-        entityKey,
-        record,
-        navigate,
-        overview: inner,
-    });
+    return (_jsx(_Fragment, { children: wrapWithLinkedEntityTabsIfConfigured({
+            linkedEntityTabs,
+            entityKey,
+            record,
+            navigate,
+            overview: inner,
+        }) }));
 }

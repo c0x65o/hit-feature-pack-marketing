@@ -90,6 +90,7 @@ export function EntityListPage({ entityKey, onNavigate, useListData, customRende
     });
     const items = data?.items || [];
     const pagination = data?.pagination;
+    const serverGroupMeta = data?.groupMeta;
     const onRequestDelete = (args) => setDeleteConfirm(args);
     const dsRenderers = dataSource?.useListCustomRenderers ? dataSource.useListCustomRenderers() : {};
     const effectiveRowActions = renderRowActions; // marketing pages don't currently use per-row actions
@@ -155,7 +156,7 @@ export function EntityListPage({ entityKey, onNavigate, useListData, customRende
     };
     return (_jsxs(Page, { title: pageTitle, description: pageDescription, actions: _jsxs(Button, { variant: "primary", onClick: () => navigate(newHref), children: [_jsx(Plus, { size: 16, className: "mr-2" }), createLabel] }), children: [_jsx(Card, { children: _jsx(DataTable, { columns: columns, data: items, loading: loading, emptyMessage: emptyMessage || 'No items yet.', onRowClick: (row) => {
                         navigate(detailHref(String(row.id)));
-                    }, onRefresh: refetch, refreshing: loading, total: pagination?.total, ...serverTable.dataTable, searchDebounceMs: 400, tableId: tableId, uiStateKey: uiStateKey, enableViews: true, showColumnVisibility: true, initialColumnVisibility: effectiveInitialColumnVisibility, initialSorting: listSpec.initialSorting }) }), deleteConfirm && deleteItem && (_jsx(Modal, { open: true, onClose: () => setDeleteConfirm(null), title: deleteConfirmTitle, children: _jsxs("div", { style: { padding: '16px' }, children: [_jsx("p", { style: { marginBottom: '16px' }, children: fillTemplate(deleteConfirmBodyTpl, {
+                    }, onRefresh: refetch, refreshing: loading, total: pagination?.total, ...serverTable.dataTable, searchDebounceMs: 400, tableId: tableId, uiStateKey: uiStateKey, serverGroupMeta: serverGroupMeta || undefined, enableViews: true, showColumnVisibility: true, initialColumnVisibility: effectiveInitialColumnVisibility, initialSorting: listSpec.initialSorting }) }), deleteConfirm && deleteItem && (_jsx(Modal, { open: true, onClose: () => setDeleteConfirm(null), title: deleteConfirmTitle, children: _jsxs("div", { style: { padding: '16px' }, children: [_jsx("p", { style: { marginBottom: '16px' }, children: fillTemplate(deleteConfirmBodyTpl, {
                                 name: deleteConfirm.label,
                                 title: deleteConfirm.label,
                                 label: deleteConfirm.label,

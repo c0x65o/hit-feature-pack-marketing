@@ -140,7 +140,13 @@ entities:
         label: Campaign Type
         optionSource: marketing.campaignTypes
         labelFromRow: campaignTypeName
-      campaignTypeName: { type: text, label: Campaign Type, virtual: true }
+      campaignTypeName:
+        type: text
+        label: Campaign Type
+        virtual: true
+        compute:
+          kind: labelFrom
+          sourceField: campaignTypeId
       status:
         type: select
         label: Status
