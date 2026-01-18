@@ -11,6 +11,8 @@
  * - marketingPlanTypes: Plan categorization
  * - marketingPlanTypeBudgets: Budget allocation by activity type
  * - marketingActivityTypes: Activity types for expense categorization
+ * - marketingCampaignTypes: Campaign type setup (ordered)
+ * - marketingCampaigns: Campaign tracking
  */
 import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 /**
@@ -443,6 +445,530 @@ export declare const marketingActivityTypes: import("drizzle-orm/pg-core").PgTab
         }, {}, {}>;
     };
     dialect: "pg";
+}>;
+/**
+ * Marketing Campaign Types Table
+ * Stores configurable campaign types used by campaigns.
+ */
+export declare const marketingCampaignTypes: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "marketing_campaign_types";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "marketing_campaign_types";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        code: import("drizzle-orm/pg-core").PgColumn<{
+            name: "code";
+            tableName: "marketing_campaign_types";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 50;
+        }>;
+        name: import("drizzle-orm/pg-core").PgColumn<{
+            name: "name";
+            tableName: "marketing_campaign_types";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        order: import("drizzle-orm/pg-core").PgColumn<{
+            name: "order";
+            tableName: "marketing_campaign_types";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        color: import("drizzle-orm/pg-core").PgColumn<{
+            name: "color";
+            tableName: "marketing_campaign_types";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 20;
+        }>;
+        isSystem: import("drizzle-orm/pg-core").PgColumn<{
+            name: "is_system";
+            tableName: "marketing_campaign_types";
+            dataType: "boolean";
+            columnType: "PgBoolean";
+            data: boolean;
+            driverParam: boolean;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        customerConfig: import("drizzle-orm/pg-core").PgColumn<{
+            name: "customer_config";
+            tableName: "marketing_campaign_types";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: unknown;
+            driverParam: unknown;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        createdByUserId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_by_user_id";
+            tableName: "marketing_campaign_types";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        createdOnTimestamp: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_on_timestamp";
+            tableName: "marketing_campaign_types";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        lastUpdatedByUserId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "last_updated_by_user_id";
+            tableName: "marketing_campaign_types";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        lastUpdatedOnTimestamp: import("drizzle-orm/pg-core").PgColumn<{
+            name: "last_updated_on_timestamp";
+            tableName: "marketing_campaign_types";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+/**
+ * Marketing Campaigns Table
+ * Stores marketing campaign records with optional LDD scope.
+ */
+export declare const marketingCampaigns: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "marketing_campaigns";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        name: import("drizzle-orm/pg-core").PgColumn<{
+            name: "name";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        description: import("drizzle-orm/pg-core").PgColumn<{
+            name: "description";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        goals: import("drizzle-orm/pg-core").PgColumn<{
+            name: "goals";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        campaignTypeId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "campaign_type_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        status: import("drizzle-orm/pg-core").PgColumn<{
+            name: "status";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 50;
+        }>;
+        startDate: import("drizzle-orm/pg-core").PgColumn<{
+            name: "start_date";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgDateString";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        endDate: import("drizzle-orm/pg-core").PgColumn<{
+            name: "end_date";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgDateString";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        budgetAmount: import("drizzle-orm/pg-core").PgColumn<{
+            name: "budget_amount";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgNumeric";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        divisionId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "division_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        departmentId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "department_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        locationId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "location_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgUUID";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        ownerUserId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "owner_user_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        createdByUserId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_by_user_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        createdOnTimestamp: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_on_timestamp";
+            tableName: "marketing_campaigns";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        lastUpdatedByUserId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "last_updated_by_user_id";
+            tableName: "marketing_campaigns";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {
+            length: 255;
+        }>;
+        lastUpdatedOnTimestamp: import("drizzle-orm/pg-core").PgColumn<{
+            name: "last_updated_on_timestamp";
+            tableName: "marketing_campaigns";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const marketingCampaignTypesRelations: import("drizzle-orm").Relations<"marketing_campaign_types", {
+    campaigns: import("drizzle-orm").Many<"marketing_campaigns">;
+}>;
+export declare const marketingCampaignsRelations: import("drizzle-orm").Relations<"marketing_campaigns", {
+    campaignType: import("drizzle-orm").One<"marketing_campaign_types", false>;
 }>;
 /**
  * Marketing Plans Table
@@ -1279,6 +1805,10 @@ export type MarketingPlanType = InferSelectModel<typeof marketingPlanTypes>;
 export type InsertMarketingPlanType = InferInsertModel<typeof marketingPlanTypes>;
 export type MarketingActivityType = InferSelectModel<typeof marketingActivityTypes>;
 export type InsertMarketingActivityType = InferInsertModel<typeof marketingActivityTypes>;
+export type MarketingCampaignType = InferSelectModel<typeof marketingCampaignTypes>;
+export type InsertMarketingCampaignType = InferInsertModel<typeof marketingCampaignTypes>;
+export type MarketingCampaign = InferSelectModel<typeof marketingCampaigns>;
+export type InsertMarketingCampaign = InferInsertModel<typeof marketingCampaigns>;
 export type MarketingPlan = InferSelectModel<typeof marketingPlans>;
 export type InsertMarketingPlan = InferInsertModel<typeof marketingPlans>;
 export type MarketingVendor = InferSelectModel<typeof marketingVendors>;
@@ -1299,4 +1829,9 @@ export declare const DEFAULT_MARKETING_PLAN_TYPES: Omit<InsertMarketingPlanType,
  * Seeded via API initialization (when the table is empty).
  */
 export declare const DEFAULT_MARKETING_ACTIVITY_TYPES: Omit<InsertMarketingActivityType, 'id' | 'createdAt' | 'updatedAt'>[];
+/**
+ * Default Marketing campaign types
+ * Seeded via API initialization (when the table is empty).
+ */
+export declare const DEFAULT_MARKETING_CAMPAIGN_TYPES: Omit<InsertMarketingCampaignType, 'id' | 'createdOnTimestamp' | 'lastUpdatedOnTimestamp'>[];
 //# sourceMappingURL=marketing.d.ts.map

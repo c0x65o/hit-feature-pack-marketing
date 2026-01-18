@@ -284,6 +284,7 @@ requires:
 
 dependencies:
   feature_packs:
+    - name: auth-core
     - name: erp-shell-core
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -10,6 +10,10 @@
 export {
   marketingPlanTypes,
   marketingActivityTypes,
+  marketingCampaignTypes,
+  marketingCampaignTypesRelations,
+  marketingCampaigns,
+  marketingCampaignsRelations,
   marketingPlans,
   marketingVendors,
   marketingExpenses,
@@ -19,6 +23,10 @@ export {
   type InsertMarketingPlanType,
   type MarketingActivityType,
   type InsertMarketingActivityType,
+  type MarketingCampaignType,
+  type InsertMarketingCampaignType,
+  type MarketingCampaign,
+  type InsertMarketingCampaign,
   type MarketingPlan,
   type InsertMarketingPlan,
   type MarketingVendor,
@@ -31,4 +39,5 @@ export {
   type InsertMarketingEntityLink,
   DEFAULT_MARKETING_PLAN_TYPES,
   DEFAULT_MARKETING_ACTIVITY_TYPES,
+  DEFAULT_MARKETING_CAMPAIGN_TYPES,
 } from '../schema/marketing';

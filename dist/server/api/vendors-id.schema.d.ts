@@ -2,10 +2,10 @@ import { z } from "zod";
 export declare const putBodySchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
     kind: z.ZodOptional<z.ZodEnum<{
+        Other: "Other";
         Platform: "Platform";
         Agency: "Agency";
         Creator: "Creator";
-        Other: "Other";
     }>>;
     link: z.ZodOptional<z.ZodNullable<z.ZodString>>;
     contact: z.ZodOptional<z.ZodNullable<z.ZodString>>;

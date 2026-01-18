@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 export type ScopeMode = 'none' | 'own' | 'ldd' | 'any';
 export type ScopeVerb = 'read' | 'write' | 'delete';
-export type ScopeEntity = 'plans' | 'expenses' | 'vendors';
+export type ScopeEntity = 'plans' | 'expenses' | 'vendors' | 'campaigns';
 /**
  * Resolve effective scope mode using a tree:
  * - entity override: marketing.{entity}.{verb}.scope.{mode}

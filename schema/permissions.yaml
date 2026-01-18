@@ -9,6 +9,10 @@ permissions:
       label: "Marketing Setup: Activity Types"
       description: "Access marketing setup: manage activity types."
       default_enabled: false
+    - key: marketing.setup.campaign-types.access
+      label: "Marketing Setup: Campaign Types"
+      description: "Access marketing setup: manage campaign types."
+      default_enabled: false
 
     # Scope Policy Tree: Marketing (global) -> entity overrides.
     #
@@ -190,4 +194,9 @@ permissions:
     - key: marketing.vendors.create
       label: Create Vendor
       description: "Create a new marketing vendor."
+      default_enabled: true
+
+    - key: marketing.campaigns.create
+      label: Create Campaign
+      description: "Create a new marketing campaign."
       default_enabled: true

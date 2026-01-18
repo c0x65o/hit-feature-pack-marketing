@@ -6,4 +6,4 @@
  * via the generated lib/feature-pack-schemas.ts file.
  */
 // Re-export from the actual schema file for type checking during build
-export { marketingPlanTypes, marketingActivityTypes, marketingPlans, marketingVendors, marketingExpenses, marketingPlanTypeBudgets, marketingEntityLinks, DEFAULT_MARKETING_PLAN_TYPES, DEFAULT_MARKETING_ACTIVITY_TYPES, } from '../schema/marketing';
+export { marketingPlanTypes, marketingActivityTypes, marketingCampaignTypes, marketingCampaignTypesRelations, marketingCampaigns, marketingCampaignsRelations, marketingPlans, marketingVendors, marketingExpenses, marketingPlanTypeBudgets, marketingEntityLinks, DEFAULT_MARKETING_PLAN_TYPES, DEFAULT_MARKETING_ACTIVITY_TYPES, DEFAULT_MARKETING_CAMPAIGN_TYPES, } from '../schema/marketing';

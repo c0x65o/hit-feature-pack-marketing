@@ -10,3 +10,7 @@ api:
       methods: [GET, POST]
       handler: plans-type-budgets
       description: "List or upsert activity-type budgets for a plan"
+    - path: /api/marketing/campaign-types/reorder
+      methods: [PUT]
+      handler: campaign-types-reorder
+      description: "Reorder campaign types"

@@ -11,6 +11,8 @@
  * - marketingPlanTypes: Plan categorization
  * - marketingPlanTypeBudgets: Budget allocation by activity type
  * - marketingActivityTypes: Activity types for expense categorization
+ * - marketingCampaignTypes: Campaign type setup (ordered)
+ * - marketingCampaigns: Campaign tracking
  */
 
 import {
@@ -18,6 +20,8 @@ import {
   text,
   varchar,
   timestamp,
+  date,
+  integer,
   numeric,
   boolean,
   unique,
@@ -25,7 +29,7 @@ import {
   index,
   jsonb,
 } from 'drizzle-orm/pg-core';
-import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
+import { relations, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 // Note: Marketing is standalone. Optional linking to projects/other entities is handled
 // via marketingEntityLinks and gated by a feature flag in feature-pack.yaml.
 
@@ -65,6 +69,79 @@ export const marketingActivityTypes = pgTable('marketing_activity_types', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+/**
+ * Marketing Campaign Types Table
+ * Stores configurable campaign types used by campaigns.
+ */
+export const marketingCampaignTypes = pgTable(
+  'marketing_campaign_types',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    code: varchar('code', { length: 50 }).notNull().unique(),
+    name: varchar('name', { length: 255 }).notNull(),
+    order: integer('order').notNull(),
+    color: varchar('color', { length: 20 }),
+    isSystem: boolean('is_system').notNull().default(false),
+    customerConfig: jsonb('customer_config'),
+    createdByUserId: varchar('created_by_user_id', { length: 255 }).notNull(),
+    createdOnTimestamp: timestamp('created_on_timestamp', { withTimezone: true }).defaultNow().notNull(),
+    lastUpdatedByUserId: varchar('last_updated_by_user_id', { length: 255 }),
+    lastUpdatedOnTimestamp: timestamp('last_updated_on_timestamp', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    orderIdx: index('marketing_campaign_types_order_idx').on(table.order),
+    codeIdx: index('marketing_campaign_types_code_idx').on(table.code),
+    nameUnique: unique('marketing_campaign_types_name_unique').on(table.name),
+    createdByIdx: index('marketing_campaign_types_created_by_idx').on(table.createdByUserId),
+  })
+);
+
+/**
+ * Marketing Campaigns Table
+ * Stores marketing campaign records with optional LDD scope.
+ */
+export const marketingCampaigns = pgTable(
+  'marketing_campaigns',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    goals: text('goals'),
+    campaignTypeId: uuid('campaign_type_id').references(() => marketingCampaignTypes.id, { onDelete: 'set null' }),
+    status: varchar('status', { length: 50 }).notNull().default('planned'),
+    startDate: date('start_date'),
+    endDate: date('end_date'),
+    budgetAmount: numeric('budget_amount', { precision: 20, scale: 2 }),
+    divisionId: uuid('division_id'),
+    departmentId: uuid('department_id'),
+    locationId: uuid('location_id'),
+    ownerUserId: varchar('owner_user_id', { length: 255 }),
+    createdByUserId: varchar('created_by_user_id', { length: 255 }).notNull(),
+    createdOnTimestamp: timestamp('created_on_timestamp', { withTimezone: true }).defaultNow().notNull(),
+    lastUpdatedByUserId: varchar('last_updated_by_user_id', { length: 255 }),
+    lastUpdatedOnTimestamp: timestamp('last_updated_on_timestamp', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    nameIdx: index('marketing_campaigns_name_idx').on(table.name),
+    statusIdx: index('marketing_campaigns_status_idx').on(table.status),
+    typeIdx: index('marketing_campaigns_type_idx').on(table.campaignTypeId),
+    ownerIdx: index('marketing_campaigns_owner_idx').on(table.ownerUserId),
+    createdByIdx: index('marketing_campaigns_created_by_idx').on(table.createdByUserId),
+    lddIdx: index('marketing_campaigns_ldd_idx').on(table.divisionId, table.departmentId, table.locationId),
+  })
+);
+
+export const marketingCampaignTypesRelations = relations(marketingCampaignTypes, ({ many }) => ({
+  campaigns: many(marketingCampaigns),
+}));
+
+export const marketingCampaignsRelations = relations(marketingCampaigns, ({ one }) => ({
+  campaignType: one(marketingCampaignTypes, {
+    fields: [marketingCampaigns.campaignTypeId],
+    references: [marketingCampaignTypes.id],
+  }),
+}));
 
 /**
  * Marketing Plans Table
@@ -182,6 +259,12 @@ export type InsertMarketingPlanType = InferInsertModel<typeof marketingPlanTypes
 
 export type MarketingActivityType = InferSelectModel<typeof marketingActivityTypes>;
 export type InsertMarketingActivityType = InferInsertModel<typeof marketingActivityTypes>;
+
+export type MarketingCampaignType = InferSelectModel<typeof marketingCampaignTypes>;
+export type InsertMarketingCampaignType = InferInsertModel<typeof marketingCampaignTypes>;
+
+export type MarketingCampaign = InferSelectModel<typeof marketingCampaigns>;
+export type InsertMarketingCampaign = InferInsertModel<typeof marketingCampaigns>;
 
 export type MarketingPlan = InferSelectModel<typeof marketingPlans>;
 export type InsertMarketingPlan = InferInsertModel<typeof marketingPlans>;
@@ -321,4 +404,24 @@ export const DEFAULT_MARKETING_ACTIVITY_TYPES: Omit<
     isSystem: true,
     isActive: true,
   },
+];
+
+/**
+ * Default Marketing campaign types
+ * Seeded via API initialization (when the table is empty).
+ */
+export const DEFAULT_MARKETING_CAMPAIGN_TYPES: Omit<
+  InsertMarketingCampaignType,
+  'id' | 'createdOnTimestamp' | 'lastUpdatedOnTimestamp'
+>[] = [
+  { code: 'email', name: 'Email Campaign', order: 1, isSystem: true, createdByUserId: 'system' },
+  { code: 'webinar', name: 'Webinar', order: 2, isSystem: true, createdByUserId: 'system' },
+  { code: 'event', name: 'Event / Trade Show', order: 3, isSystem: true, createdByUserId: 'system' },
+  { code: 'content', name: 'Content Marketing', order: 4, isSystem: true, createdByUserId: 'system' },
+  { code: 'paid_search', name: 'Paid Search (PPC)', order: 5, isSystem: true, createdByUserId: 'system' },
+  { code: 'paid_social', name: 'Paid Social', order: 6, isSystem: true, createdByUserId: 'system' },
+  { code: 'organic_social', name: 'Organic Social', order: 7, isSystem: true, createdByUserId: 'system' },
+  { code: 'referral', name: 'Referral Program', order: 8, isSystem: true, createdByUserId: 'system' },
+  { code: 'direct_mail', name: 'Direct Mail', order: 9, isSystem: true, createdByUserId: 'system' },
+  { code: 'other', name: 'Other', order: 10, isSystem: true, createdByUserId: 'system' },
 ];

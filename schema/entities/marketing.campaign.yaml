@@ -160,19 +160,16 @@ entities:
         label: Division
         optionSource: org.divisions
         defaultFrom: { kind: orgScopeFirst, path: divisionIds }
-        virtual: true
       departmentId:
         type: select
         label: Department
         optionSource: org.departments
         defaultFrom: { kind: orgScopeFirst, path: departmentIds }
-        virtual: true
       locationId:
         type: select
         label: Location
         optionSource: org.locations
         defaultFrom: { kind: orgScopeFirst, path: locationIds }
-        virtual: true
       ownerUserId: { type: text, label: Owner }
       createdByUserId: { type: text, label: Created By }
       createdOnTimestamp: { type: datetime, label: Created }
