@@ -131,7 +131,7 @@ entities:
         - kind: embeddedTable
           title: Expenses
           entityType: marketing.expense
-          tableId: marketing.planExpenses
+          tableId: marketing.expenses
           pageSize: 25
           initialSort: { sortBy: occurredAt, sortOrder: desc }
           sortWhitelist: [occurredAt, amount, createdAt]
