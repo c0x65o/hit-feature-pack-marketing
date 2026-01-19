@@ -1,4 +1,3 @@
-import { NextRequest, NextResponse } from 'next/server';
 import type { ActionCheckResult } from '@hit/feature-pack-auth-core/server/lib/action-check';
 import {
   checkActionPermission,
@@ -6,15 +5,15 @@ import {
 } from '@hit/feature-pack-auth-core/server/lib/action-check';
 
 export async function checkMarketingAction(
-  request: NextRequest,
+  request: Request,
   actionKey: string
 ): Promise<ActionCheckResult> {
   return checkActionPermission(request, actionKey, { logPrefix: 'Marketing' });
 }
 
 export async function requireMarketingAction(
-  request: NextRequest,
+  request: Request,
   actionKey: string
-): Promise<NextResponse | null> {
+): Promise<Response | null> {
   return requireActionPermission(request, actionKey, { logPrefix: 'Marketing' });
 }

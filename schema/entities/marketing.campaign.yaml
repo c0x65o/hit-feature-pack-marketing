@@ -28,19 +28,14 @@ entities:
     # Schema-driven page security (source of truth for EntityList/Detail/Edit pages).
     security:
       list:
-        roles: []
         authz: { entity: campaigns, verb: read }
       detail:
-        roles: []
         authz: { entity: campaigns, verb: read }
       new:
-        roles: []
         authz: { entity: campaigns, verb: write, require_create: true }
       edit:
-        roles: []
         authz: { entity: campaigns, verb: write }
       delete:
-        roles: []
         authz: { entity: campaigns, verb: delete }
 
     api:

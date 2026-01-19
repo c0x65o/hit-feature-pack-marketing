@@ -31,16 +31,12 @@ entities:
     # Schema-driven page security (source of truth for EntityList/Detail/Edit pages).
     security:
       list:
-        roles: []
         authz: { entity: plans, verb: read }
       detail:
-        roles: []
         authz: { entity: plans, verb: read }
       new:
-        roles: []
         authz: { entity: plans, verb: write, require_create: true }
       edit:
-        roles: []
         authz: { entity: plans, verb: write }
 
     storage:

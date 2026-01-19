@@ -15,5 +15,5 @@ export declare function GET(request: NextRequest): Promise<NextResponse<{
     limit: number;
     offset: number;
 }>>;
-export declare function POST(request: NextRequest): Promise<NextResponse<any>>;
+export declare function POST(request: NextRequest): Promise<Response>;
 //# sourceMappingURL=campaigns.d.ts.map

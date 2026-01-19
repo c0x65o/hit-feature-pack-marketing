@@ -32,16 +32,12 @@ entities:
     # Schema-driven page security (source of truth for EntityList/Detail/Edit pages).
     security:
       list:
-        roles: []
         authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
       detail:
-        roles: []
         authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
       new:
-        roles: []
         authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
       edit:
-        roles: []
         authz: { entity: setup, verb: read, require_action: marketing.setup.activity-types.access, show_pages: true }
 
     storage:

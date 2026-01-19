@@ -15,5 +15,5 @@ export declare function GET(request: NextRequest): Promise<NextResponse<{
 }> | NextResponse<{
     error: string;
 }>>;
-export declare function POST(request: NextRequest): Promise<NextResponse<any>>;
+export declare function POST(request: NextRequest): Promise<Response>;
 //# sourceMappingURL=plans.d.ts.map
